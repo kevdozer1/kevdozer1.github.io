@@ -689,6 +689,16 @@ progress {
      /* Progress bar value for IE10  */
      color: var(--global-theme-color);
  }
+
+ .naturepics{
+  display: flex;
+  justify-content: space-between;
+ }
+
+ .kevinpics{
+  display: flex;
+  justify-content: space-between;
+ }
  
  progress::-webkit-progress-bar {
      background-color: transparent;
