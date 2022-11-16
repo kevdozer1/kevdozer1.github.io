@@ -2,7 +2,7 @@
 layout: aboutme
 permalink: /teaching/
 title: about me
-description: and this website
+description: And my nifty web site
 nav: true
 nav_order: 2
 ---

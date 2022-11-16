@@ -9,23 +9,33 @@ layout: default
             <p class="post-description">{{ page.description }}</p>
           </header>
           <hr>
-          <div class = "naturepics">
-            <img src="/assets/img/IMG_2816.jpg" height = "420" alt=""  /> 
-            <img src="/assets/img/IMG_2818.jpg" height = "420" alt=""  />
-            <img src="/assets/img/IMG_2819.jpg" height = "420" alt="" />
+          <div class="row mt-3">
+            <div class="col-sm mt-3 mt-md-0">
+                {% include figure.html path="assets/img/IMG_2816.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
+            </div>
+            <div class="col-sm mt-3 mt-md-0">
+                {% include figure.html path="assets/img/IMG_2818.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
+            </div>
+            <div class="col-sm mt-3 mt-md-0">
+                {% include figure.html path="assets/img/IMG_2819.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
+            </div>
           </div>
           <hr>
           <article>
             {{ content }}
           </article>
-          <hr>
           <p>This website was built with Jekyll, stored on Github and hosted by Netlify.</p>
-          <p>Graphics were made in Illustrator and Photoshop. Homepage header made in Blender.</p>
+          <p>Graphics were made in Illustrator and Photoshop. Homepage header and motion graphics made in Blender.</p>
           <hr>
-          <div class = "kevinpics">
-            <img src="/assets/img/IMG_2812.jpg" height = "420" alt=""  /> 
-            <img src="/assets/img/IMG_2815.jpg" height = "420" alt=""  />
-            <img src="/assets/img/IMG_2814.jpg" height = "420" alt="" />
+          <div class="row mt-3">
+            <div class="col-sm mt-3 mt-md-0">
+                {% include figure.html path="assets/img/IMG_2812.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
+            </div>
+            <div class="col-sm mt-3 mt-md-0">
+                {% include figure.html path="assets/img/IMG_2815.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
+            </div>
+            <div class="col-sm mt-3 mt-md-0">
+                {% include figure.html path="assets/img/IMG_2814.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
+            </div>
           </div>
-
         </div>

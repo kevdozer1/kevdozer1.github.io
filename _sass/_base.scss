@@ -12,6 +12,10 @@ hr {
   border-top: 1px solid var(--global-divider-color);
 }
 
+hr.new1 {
+  border-top: 1px solid var(--global-theme-color);
+}
+
 table {
   td, th {
     color: var(--global-text-color);
@@ -248,10 +252,10 @@ blockquote {
   }
 }
 
-#rectangle{
-  width: 100%;
-  height:160px;
-  background:black;
+.centerlogo{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 // Social (bottom)
@@ -337,18 +341,21 @@ footer.sticky-bottom {
 .header-bar {
   border-bottom: 1px solid var(--global-divider-color);
   text-align: center;
-  padding-top: 2rem;
-  padding-bottom: 3rem;
+  padding-top: .5rem;
+  padding-bottom: 2rem;
   h1 {
     color: var(--global-theme-color);
-    font-size: 5rem;
+    font-size: 4rem;
+  }
+  h2 {
+    font-size: 1.5rem;
   }
 }
 
 .tag-list {
   border-bottom: 1px solid var(--global-divider-color);
   text-align: center;
-  padding-top: 1rem;
+  padding-top: .5rem;
 
   ul {
     justify-content: center;
@@ -357,7 +364,7 @@ footer.sticky-bottom {
     p, li {
       list-style: none;
       display: inline-block;
-      padding: 1rem 0.5rem;
+      padding: 0.5rem 0.2rem;
       color: var(--global-text-color-light);
     }
   }
@@ -427,7 +434,6 @@ footer.sticky-bottom {
 .projects {
   a {
     text-decoration: none;
-
     &:hover {
       .card-title {
         color: var(--global-theme-color);
@@ -452,14 +458,17 @@ footer.sticky-bottom {
   }
 
   .grid-sizer, .grid-item {
-    width: 250px;
+    width: 30%;
     margin-bottom: 10px;
+  }
+  .card-title{
+    font-size: 1.5rem;
   }
 
   h2.category {
-    color: var(--global-divider-color);
-    border-bottom: 1px solid var(--global-divider-color);
-    padding-top: 0.5rem;
+    color: var(--global-theme-color);
+    border-bottom: 1px solid var(--global-theme-color);
+    padding-top: 0.1rem;
     margin-top: 2rem;
     margin-bottom: 1rem;
     text-align: right;
@@ -673,7 +682,7 @@ progress {
    
      /* Dimensions */
      width: 100%;
-     height: 1px;
+     height: 2px;
    
      /* Reset the appearance */
      -webkit-appearance: none;
@@ -687,7 +696,7 @@ progress {
      background-color: transparent;
    
      /* Progress bar value for IE10  */
-     color: var(--global-theme-color);
+     color: var(--global-progress-color);
  }
 
  .naturepics{
@@ -705,11 +714,11 @@ progress {
  }
    
  progress::-webkit-progress-value {
-     background-color: var(--global-theme-color);
+     background-color: var(--global-progress-color);
  }
    
  progress::-moz-progress-bar {
-     background-color: var(--global-theme-color);
+     background-color: var(--global-progress-color);
  }
  
  .progress-container {
@@ -723,7 +732,7 @@ progress {
  }
  
  .progress-bar {
-     background-color: var(--global-theme-color);
+     background-color: var(--global-progress-color);
      width: 0%;
      display: block;
      height: inherit;
