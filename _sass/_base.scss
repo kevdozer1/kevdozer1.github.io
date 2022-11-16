@@ -699,15 +699,21 @@ progress {
      color: var(--global-progress-color);
  }
 
- .naturepics{
-  display: flex;
-  justify-content: space-between;
- }
-
- .kevinpics{
-  display: flex;
-  justify-content: space-between;
- }
+ .krow {
+  display: table;
+  border-collapse: collapse;
+  width: 100%;
+}
+.kitem {
+  display: table-cell;
+  vertical-align: top;
+}
+.kitem img {
+  display: inline-block !important;
+  max-width: 100% !important;
+  width: 100%;
+  height: auto;
+}
  
  progress::-webkit-progress-bar {
      background-color: transparent;
