@@ -2,7 +2,7 @@
 layout: about
 title: home
 permalink: /
-subtitle: Its kevdozer1.com
+subtitle: ~ It's kevdozer1.com ~
 
 profile:
   align: right
@@ -14,7 +14,16 @@ news: true  # includes a list of news items
 selected_papers: false # includes a list of papers marked as "selected={true}"
 social: true  # includes social icons at the bottom of the page
 ---
-HELLO. WELCOME TO MY WEB PAGE. ITS ME
+Hello. Welcome to my web page. This page is for me to post my thoughts to the smallest audience possible. Thank you for visiting it.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Goals for the page:
+
+Blog - Any rant and rave that I would like to share
+
+Projects - Here I will post any bigger technical/creative things I have done since making this page.
+
+Repositories - Links to GitHub repositories that should accompany any of the projects listed on this website
+
+About me - Never-before-seen glimpse into the twisted mind of Kevin Hopkins
+
+That's it. Hope you have a nice day

@@ -5,10 +5,14 @@ layout: default
 <!-- about.html -->
       <div class="post">
         <header class="post-header">
+          <style>
+            h1 {text-align: center;}
+            h4 {text-align: center;}
+          </style>
           <h1 class="post-title">
            {% if site.title == "blank" -%}<span class="font-weight-bold">{{ site.first_name }}</span> {{ site.middle_name }} {{ site.last_name }}{%- else -%}{{ site.title }}{%- endif %}
           </h1>
-          <p class="desc">{{ page.subtitle }}</p>
+          <h4 class="desc">{{ page.subtitle }}</h4>
         </header>
 
         <article>
@@ -35,17 +39,14 @@ layout: default
             {%- endif %}
           </div>
           {%- endif %}
-          <p><img src="/assets/img/favicon.png" alt="Logo" style="float:right;width:420px;height:420px;">
-            The image will float to the right of the text.</p>
-          <p><img src="/assets/img/favicon.png" alt="Logo" style="float:left;width:42px;height:42px;">
-            The image will float to the left of the text.</p>
+          <hr class = "new1">
+          <img src="assets/img/0001.gif" alt="Spinninglogo" class="centerlogo">
+          <hr class = "new1">
 
           <div class="clearfix">
             {{ content }}
           </div>
-
-          <hr class = "new1">
-          <img src="assets/img/0001.gif" alt="Spinninglogo" class="centerlogo">
+          <img src="assets/img/XwI7.gif" alt="Spinninglogo" class="centerlogo">
           <hr class = "new1">
           {% if page.news -%}
           <!-- News -->

@@ -7,4 +7,6 @@ nav: true
 nav_order: 2
 ---
 
-undergrad wisconsin '22, grad usc '24, interested in anything combining tech and art, Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+The proud son to two Laotian rice farmers, Kevin Hopkins is a disinformation agent concocted by several competing South American intelligence agencies. The name 'Kevin Hopkins' is a slang term adopted from Cajun riverboat slang; my real name is a sequence of numbers that redirects you to a randomly selected Fortune 500 webpage when clicked. 
+
+I like computer graphics, 3D animation, movies, comedy, and whatever makes me sound cool in conversation. I graduated from UW-Madison in the spring of 2022 and am currently doing my master's degree at USC in computer science. My favorite comedian is Norm Macdonald. My favorite movie is Ratatouille. I probably have about 10 friends which I feel like is a lot if you really think about it. I like big, old, slow dogs. My favorite animal is either a gorilla or an axolotl. I am an optimist and a generalist at heart.
