@@ -1,5 +1,5 @@
 $(document).ready(function () {
-  const blogGold = "#e0d4a6";
+  const blogGold = "#2d1b4e";
 
   $("a.abstract").click(function () {
     $(this).parent().parent().find(".abstract.hidden").toggleClass("open");
