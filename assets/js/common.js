@@ -1,6 +1,4 @@
 $(document).ready(function () {
-  const blogGold = "#2d1b4e";
-
   $("a.abstract").click(function () {
     $(this).parent().parent().find(".abstract.hidden").toggleClass("open");
   });
@@ -24,22 +22,22 @@ $(document).ready(function () {
     style.id = "kev-blog-style";
     style.textContent = `
       .post .post-header {
-        border-bottom: 1px solid ${blogGold};
+        border-bottom: 1px solid var(--global-blog-accent);
         padding-bottom: 0.8rem;
         margin-bottom: 1.75rem;
       }
 
       .post .post-header .post-title {
-        color: ${blogGold};
+        color: var(--global-blog-accent);
         font-weight: 700;
       }
 
       .post .post-header .post-meta {
-        color: ${blogGold};
+        color: var(--global-blog-accent);
       }
 
       .post .caption {
-        color: ${blogGold};
+        color: var(--global-blog-accent);
       }
     `;
     document.head.appendChild(style);
