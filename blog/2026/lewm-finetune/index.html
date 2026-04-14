@@ -152,6 +152,8 @@
 
           <p>A key factor in JEPA models is that they aren't human-decodable. LeWorldModel mentions a pixel decoder in the paper but doesn't actually provide one. This decoder would translate predicted latents back into actual images, which would show us what the model thinks is going to happen. I'll come back to this problem.</p>
 
+          <p>JEPA, and LeWorldModel by extension, informs robotic actions very efficiently. It doesn't generate an action, but it generates the next state in the form of the latent given some action. You can use this to decide between lots of candidate actions this way. And because JEPA shirks human-friendly intermediate outputs, you can rifle through these actions very quickly and use some scoring function to decide the best policy fast.</p>
+
           <p>LeWorldModel has existing <a href="https://huggingface.co/collections/quentinll/lewm" target="_blank" rel="noopener noreferrer">weights and datasets</a> available. The pretrained checkpoint I used was OGCube, the task closest to the 3D spatial reasoning I wanted to probe. But one synthetic cube isn't exactly a demanding test of generalization. I needed a more formidable dataset.</p>
 
           <p>After a fairly wide search of available robotics datasets, I landed on BridgeData V2.</p>
@@ -238,7 +240,7 @@
 
           <p>To attempt a fix, I built foreground-biased tracking: about 47 object tracks per frame. The tracks genuinely landed on the object and looked really good upon a visual audit, but the results remained middling.</p>
 
-          <p>This is actually a useful result because it tells you the failure is with the architecture instead of the data quality. A single 192-dim CLS token cannot usefully encode 400 independent 2D displacements through a flat MLP. The architecture is the bottleneck, not the signal.</p>
+          <p>This is actually a useful result because it tells you the failure is with the architecture instead of the data quality. A single 192-dim CLS token cannot usefully encode 400 independent 2D displacements through a flat MLP. The architecture can't handle it.</p>
 
           <p>I've recently seen <a href="https://motion-forecasting.github.io/" target="_blank" rel="noopener noreferrer">other research</a> that had much better results with point tracks using a fundamentally different approach. Their model treats each track as its own token with local visual features from a frozen DINOv3 backbone, plus explicit occlusion handling. They train with a diffusion objective on reparameterized point velocities, which focuses learning on motion dynamics rather than absolute coordinates. Tracks aren't dead as a concept for world models, but maybe they're dead in my CLS-only formulation.</p>
 
