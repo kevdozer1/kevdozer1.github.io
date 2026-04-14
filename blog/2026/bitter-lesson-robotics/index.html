@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>The Bitter Lesson Is Coming for 3D Vision. Here's Why That's Fine. | kevdozer1.com</title>
+    <title>Robotic foundation models will absorb Gaussian splats, not kill them | kevdozer1.com</title>
     <meta name="author" content="Kevin Hopkins">
     <meta name="description" content="Imagine an apple falling off a tree. A program which forecasted that apple falling at 9.8 m/s² would understand gravity explicitly; the underlying truth of gravity would be directl">
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website">
@@ -60,7 +60,7 @@
     <div class="container mt-5">
       <div class="post">
         <header class="post-header">
-          <h1 class="post-title">The Bitter Lesson Is Coming for 3D Vision. Here's Why That's Fine.</h1>
+          <h1 class="post-title">Robotic foundation models will absorb Gaussian splats, not kill them</h1>
           <p class="post-meta">April 12, 2026</p>
         </header>
         <article class="post-content">
@@ -90,21 +90,21 @@
 
           <p>My working assumption is that implicit 3D representations will devour explicit 3D representations in robotics. But the part I think people gloss over is that they will do so by <em>absorbing</em> the actual information those explicit representations convey. The bitter lesson doesn't say human knowledge is useless. It says human knowledge doesn't win when hardcoded into the system at inference time. That knowledge can still be enormously valuable when it's used to <em>train</em> the system.</p>
 
-          <p>So it's still worthwhile to work on explicit 3D representations for robotics. Not because they'll live forever in the inference loop, but because they're the best vehicle we have right now for injecting geometric understanding into the models that will eventually replace them.</p>
+          <p>So it's still worthwhile to work on explicit 3D representations for robotics. They may not live forever in the inference loop, but they're the best vehicle we have right now for injecting geometric understanding into the models that will eventually replace them.</p>
 
           <h2>The Data Reality</h2>
 
           <p>The abundance of 3D data (point clouds, meshes, depth maps, multi-view reconstructions) pales in comparison to the abundance of web video. There are billions of hours of video on the internet capturing every conceivable physical interaction. There are comparatively very few high-quality 3D reconstructions of robotic environments with action labels.</p>
 
-          <p>So pretraining will be dominated by web video, and rightly so. Projects like DreamDojo are already showing what happens when you pretrain a world model on 44,000 hours of egocentric human video. You get a system that understands gravity, collisions, and object permanence without anyone writing out a single physics equation. The implicit approach, scaling on video, doing its thing.</p>
+          <p>So pretraining will be dominated by web video, and rightly so. Projects like <a href="https://dreamdojo-world.github.io/" target="_blank" rel="noopener noreferrer">DreamDojo</a> are already showing what happens when you pretrain a world model on 44,000 hours of egocentric human video. You get a system that understands gravity, collisions, and object permanence without anyone writing out a single physics equation. The implicit approach, scaling on video, doing its thing.</p>
 
-          <p>But pretraining is only half the story. The question is what happens <em>after</em> pretraining, when you need to fine-tune these models for specific robotic tasks in specific physical environments. This is where 3D explicits re-enter the picture. Not as the main course, but as a seasoning that makes the whole dish work.</p>
+          <p>But pretraining is only half the story. The question is what happens <em>after</em> pretraining, when you need to fine-tune these models for specific robotic tasks in specific physical environments. This is where 3D explicits re-enter the picture.</p>
 
-          <p>I think the best way for explicit 3D representations to be absorbed by foundation models is through post-training and fine-tuning. Depth maps, surface normals, signed distance fields, occupancy labels. These can serve as auxiliary supervision signals that shape a model's latent representations during fine-tuning without needing to be present at inference time. Jon Barron has gestured at this idea, that the insights of 3D vision are most valuable when they're used to condition and constrain the training of larger models, rather than being deployed as standalone systems.</p>
+          <p>I think the best way for explicit 3D representations to be absorbed by foundation models is through post-training and fine-tuning. Depth maps, surface normals, signed distance fields, occupancy labels. These can serve as auxiliary supervision signals that shape a model's latent representations during fine-tuning without needing to be present at inference time. <a href="https://x.com/jon_barron/status/2035853624178545001?s=20" target="_blank" rel="noopener noreferrer">Jon Barron has gestured at this idea</a>, that the insights of 3D vision are most valuable when they're used to condition and constrain the training of larger models, rather than being deployed as standalone systems.</p>
 
           <h2>The Pipeline Opportunity</h2>
 
-          <p>The best way to generate those 3D explicits at scale might just be to extract them <em>from</em> web video itself. Monocular depth estimation, structure-from-motion on internet footage, self-supervised multi-view reconstruction. These are all ways to bootstrap geometric supervision from the same ocean of video that's already being used for pretraining. You take the implicit data (video), extract explicit structure (depth, normals, camera poses), and feed that structure back as supervision for fine-tuning. The explicit becomes a waypoint in the implicit's journey.</p>
+          <p>The best way to generate those 3D explicits at scale might just be to extract them <em>from</em> web video itself. Monocular depth estimation, structure-from-motion on internet footage, self-supervised multi-view reconstruction. These are all ways to bootstrap geometric supervision from the same ocean of video that's already being used for pretraining. You take the implicit data (video), extract explicit structure (depth, normals, camera poses), and feed that structure back as supervision for fine-tuning. The explicit becomes a waypoint in the implicit's journey. I have some <a href="/blog/2025/non-sequential-sfm/">interesting ideas</a> for distilling point clouds of objects from mobile video.</p>
 
           <p>As the quantity of robotics data comes out of its current deficiency (and it will, between simulation, teleoperation, and human video pipelines) the bottleneck will shift. It won't be about getting <em>enough</em> data. It will be about <em>processing</em> that data effectively. Curating it. Extracting the right geometric signals. Designing the right auxiliary losses. Building the pipelines that turn raw video into structured supervision for fine-tuning.</p>
 
