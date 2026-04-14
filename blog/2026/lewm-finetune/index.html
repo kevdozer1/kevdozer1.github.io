@@ -158,7 +158,7 @@
 
           <p><a href="https://rail-berkeley.github.io/bridgedata/" target="_blank" rel="noopener noreferrer">BridgeData</a> has real manipulation video of robot arms on all kinds of objects. Kitchen items, foods, containers, tools. It has 7-DOF action labels, gripper state observations, useful for detecting when the robot grabs something, and natural language task descriptions that I could filter on.</p>
 
-          <p>BridgeData has about 60,000 trajectories. To iterate efficiently, I built a weighted scoring system to filter for the best clips: task quality, prefer "put X on Y" and "pick up", penalize cloth folding, episode length, 15 to 40 frames is the sweet spot, track displacement, if nothing moves much, what are we even learning, mask quality, want 2 to 25% frame coverage with low temporal variance, and depth quality, want dynamic range above 2.0. I selected 100 episodes randomly from the top 300 scorers. From those, I handpicked the 13 highest quality as a pilot set.</p>
+          <p>BridgeData has about 60,000 trajectories. To iterate efficiently, I built a weighted scoring system to filter for the best clips: task quality, prefer "put X on Y" and "pick up", penalize cloth folding, episode length, 15 to 40 frames is the sweet spot, track displacement, if nothing moves much, what are we even learning, mask quality, want 2 to 25% frame coverage with low temporal variance, and depth quality, want dynamic range above 2.0. For my own larger set, I selected 100 episodes randomly from the entire dataset. From those, I used this scoring system to pick the 13 highest quality videos as a pilot set.</p>
 
           <h2>Data</h2>
 
@@ -209,7 +209,7 @@
             <li><strong>G:</strong> Shape descriptor. Predict 10D object geometry summary, around 37K extra params.</li>
           </ul>
 
-          <p>All auxiliary losses weighted at 0.1. Training: AdamW, lr=5e-5, batch 16, 20 epochs, bf16 mixed precision, 3 to 10 seeds per condition. I made some small encoding dimension changes to support the auxiliary heads, but the core LeWM architecture was kept intact.</p>
+          <p>All auxiliary losses weighted at 0.1. Our training stack looked like: AdamW, lr=5e-5, batch 16, 20 epochs, bf16 mixed precision, 3 to 10 seeds per condition. I made some small encoding dimension changes to support the auxiliary heads, but the core LeWM architecture was kept intact.</p>
 
           <p>This setup made the project a clean ablation. Same data, same base model, same optimizer. The impact of each extra supervision signal is isolated. If depth helps, it's because depth helped, not because we changed three other things at the same time. Nice!</p>
 
