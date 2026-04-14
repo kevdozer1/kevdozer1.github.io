@@ -68,7 +68,7 @@
 
           <p>This is an open question in robotics and computer vision research right now. As more of the planning stack moves into neural networks, the way these models represent the physical world matters a lot. I wrote a bit about the broader landscape <a href="/blog/2026/bitter-lesson-robotics/">here</a>, but this post is about a project I ran to try and probe this directly: what happens when you take a world model and train it to predict specific computer vision signals alongside its normal task? Does predicting depth make it better? Point tracks? Object shape?</p>
 
-          <p>I figured a classic ablation would be really incisive in cutting out the noise around what modalities were valuable to these models. Same model, same data, same training setup. The only variable is which signal you add on top. With this, we can isolate the effect of each modality and see what actually helps in foundation model training.</p>
+          <p>I figured a classic ablation experiment would be really incisive in cutting out the noise around what modalities were valuable to these models. Same model, same data, same training setup. The only variable is which signal you add on top. With this, we can isolate the effect of each modality and see what actually helps in foundation model training.</p>
 
           <h2>Foundation</h2>
 
@@ -146,13 +146,15 @@
           </div>
           <div class="caption">Visualizations of LeWorldModel outputs.</div>
 
-          <p>When <a href="https://le-wm.github.io/" target="_blank" rel="noopener noreferrer">LeWorldModel</a> came out as a new JEPA-based world model, I thought it would be a great candidate for this experiment. It's super compact at 15M parameters total and it's built around ViT-Tiny, roughly 7.6M params. That means it's small enough to iterate on freely with just my GPU. Being able to mess around with these models at a low investment is really vital for getting familiar with this field. No finetuning testbed for LeWorldModel seemed to exist, so I <a href="https://github.com/kevdozer1/leWN_finetune_toolkit" target="_blank" rel="noopener noreferrer">built one and released it</a> so I could try lots of things across a wide scope.</p>
+          <p>When <a href="https://le-wm.github.io/" target="_blank" rel="noopener noreferrer">LeWorldModel</a> came out as a new JEPA-based world model, I figured it would be a great candidate for this experiment. It's super compact at 15M parameters total and it's built around ViT-Tiny, roughly 7.6M params. That means it's small enough to iterate on freely with just my GPU. Being able to mess around with these models at a low investment is really vital for getting familiar with this field. No finetuning testbed for LeWorldModel seemed to exist, so I <a href="https://github.com/kevdozer1/leWN_finetune_toolkit" target="_blank" rel="noopener noreferrer">built one and released it</a> so I could try lots of things across a wide scope.</p>
 
           <p>The way LeWM works is that a ViT encoder processes each frame into a single 192-dimensional CLS token, and then a small transformer predictor takes a window of these tokens plus actions and predicts the next one. The whole future of the scene has to compress through that single 192-dim vector. This is the kind of information that my eyes tend to glaze over but it ended up mattering later.</p>
 
           <p>A key factor in JEPA models is that they aren't human-decodable. LeWorldModel mentions a pixel decoder in the paper but doesn't actually provide one. This decoder would translate predicted latents back into actual images, which would show us what the model thinks is going to happen. I'll come back to this problem.</p>
 
           <p>LeWorldModel has existing <a href="https://huggingface.co/collections/quentinll/lewm" target="_blank" rel="noopener noreferrer">weights and datasets</a> available. The pretrained checkpoint I used was OGCube, the task closest to the 3D spatial reasoning I wanted to probe. But one synthetic cube isn't exactly a demanding test of generalization. I needed a more formidable dataset.</p>
+
+          <p>After a fairly wide search of available robotics datasets, I landed on BridgeData V2.</p>
 
           <p><img src="/assets/lewm/bridgedata.gif" alt="BridgeData sample"></p>
 
@@ -280,14 +282,14 @@
           <p><img src="/assets/lewm/dashboardss2.png" alt="Dashboard screenshot 1"></p>
           <div class="caption">The other half: retrieval distance over time, stability metrics, and per-episode curation tags.</div>
 
-          <p>Since the model predicts latents and not images, I needed a way to actually see what it was predicting. The approach I settled on was retrieval: for each predicted latent, search the entire dataset for the real frame whose latent is closest by L2 distance, and display that frame. It's a visual proxy. If the model predicts a latent that's close to "frame 47 of episode 3," we show that frame. The retrieved image isn't what the model generated, but it reflects what the model's internal state looks like.</p>
+          <p>Since the model predicts latents and not images, I needed a way to actually see what it was predicting. I settled on a handy retrieval approach. For each predicted latent, search the entire dataset for the real frame whose latent is closest by L2 distance and then display that frame. If the model predicts a latent that's close to "frame 47 of episode 3," we show that frame. The retrieved image isn't actually what the model generated, but it reflects what the model's internal state looks like.</p>
 
-          <p>The retrieval rollout dashboards showed side-by-side GIFs of ground truth versus static baseline versus model predictions via this nearest-neighbor retrieval. Two retrieval modes: global search across all frames, honest but choppy, and same-episode search, smooth, good for presentations. I built auto-curation tags that labeled episodes as "static-dominates" or "models-beat-static" or "tight-tie" so I could quickly browse for the best examples. These are some useful QoL improvements when you're sifting through a bunch of episodes.</p>
+          <p>The retrieval rollout dashboards showed side-by-side GIFs of ground truth versus static baseline versus model predictions via this nearest-neighbor retrieval. Two retrieval modes: global search across all frames, honest but can sometimes show frames from other episodes, and same-episode search, smooth, restricts search to the target episode. I built auto-curation tags that labeled episodes as "static-dominates" or "models-beat-static" or "tight-tie" so I could quickly browse for the best examples. I like to use little QoL improvements like this when sifting through a bunch of episodes.</p>
 
           <p><img src="/assets/lewm/episode_002.gif" alt="Retrieval rollout comparison"></p>
           <div class="caption">Here you can see the decoder versus retrieval strategy for visualization. The right two columns are decoded from latent, the middle two are retrieved from the dataset.</div>
 
-          <p>I tried to code a pixel decoder for JEPA but I just kept getting these results that looked like dementors. Since LeWorldModel predicts the next latent state instead of the resulting image, the model not producing human-legible outputs creates a fundamental tension in visualization. I tried training a cross-attention decoder to map latents back to RGB, but the results were patchy. It's been much easier to use the retrieval strategy where the predicted latent is matched to the most similar real image in the full reference corpus. Since visualization is so important and JEPA naturally resists human legibility, this retrieval approach has been the main way I've built understanding of what the model is actually learning.</p>
+          <p>I tried to code a pixel decoder for JEPA but I just kept getting these results that looked like dementors. Since LeWorldModel predicts the next latent state instead of the resulting image, the model not producing human-legible outputs creates a fundamental tension in visualization. I tried training a cross-attention decoder to map latents back to RGB, but the results were patchy. It's been much easier to use the retrieval strategy where the predicted latent is matched to the most similar real image in the full reference corpus. Since visualization is so important and JEPA naturally resists human legibility, this retrieval approach has been huge in building an understanding of what the model is actually learning.</p>
 
           <h2>Looking Forward</h2>
 
@@ -297,7 +299,7 @@
 
           <p>I'm measuring latent prediction quality, not downstream task success. The real test would be whether better latents lead to better robot behavior. That's a harder experiment and I haven't run it. Full-scale only covered conditions A, B, D, and E. Not every condition got the 100-episode treatment. The depth estimation drifts on static backgrounds in some clips, which is a model quality issue that a better depth backbone would fix. And the CLS bottleneck is very specific to this architecture. A model that doesn't throw away spatial tokens might tell a completely different story.</p>
 
-          <p>A better RGB video to monocular depth model could definitely help. You can see in earlier visualizations that the environment in our depth videos gets "warmer" as the arm itself moves around. The environment would ideally stay static in the depth estimation.</p>
+          <p>A better RGB video -&gt; monocular depth model could definitely help. You can see in earlier visualizations that the environment in our depth videos gets "warmer" as the arm itself moves around. The environment would ideally stay static in the depth estimation.</p>
 
           <p>Multi-view or moving camera data would be super awesome to try. Wrist cameras, maybe. This would unlock proper Gaussian splatting and NeRF experiments. The original project vision requires it. I'm also thinking about how to make this work on web video, which is almost always monocular and mobile. The pipeline needs to handle both.</p>
 
