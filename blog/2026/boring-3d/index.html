@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>boring-3D: Can Explicit 3D Supervision Help Latent World Models? | kevdozer1.com</title>
+    <title>Which Vision Signals Actually Help Robotic Foundation Models? | kevdozer1.com</title>
     <meta name="author" content="Kevin Hopkins">
-    <meta name="description" content="I wanted to see how to best incorporate vision signals into world models. Not in the obvious way — not &quot;give the model a depth map as input and hope for the best.&quot; It was">
+    <meta name="description" content="A LeWorldModel ablation on BridgeData asking which explicit vision signals actually help latent prediction in robotic foundation models.">
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-DF7Zhf293AJxJNTmh5zhoYYIMs2oXitRfBjY+9L//AY=" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous">
@@ -60,150 +60,159 @@
     <div class="container mt-5">
       <div class="post">
         <header class="post-header">
-          <h1 class="post-title">boring-3D: Can Explicit 3D Supervision Help Latent World Models?</h1>
+          <h1 class="post-title">Which Vision Signals Actually Help Robotic Foundation Models?</h1>
           <p class="post-meta">April 12, 2026</p>
         </header>
         <article class="post-content">
-          <p>I wanted to see how to best incorporate vision signals into world models. Not in the obvious way — not &quot;give the model a depth map as input and hope for the best.&quot; It was about implicits. How could we best induce an implicit understanding of geometry inside a model that only ever sees compressed latent vectors? The idea is that if you force a latent to predict depth alongside its normal job during training, the latent itself becomes geometrically richer. Then you throw the depth head away at inference. The geometry stays behind, baked into the representation.</p>
+          <p>How can a robot learn to understand the space around it? Not just detect objects or plan a path, but develop some internal sense of depth, shape, and motion that generalizes across tasks?</p>
 
-          <p>So the question became: could I extract individual signals from robot videos — depth, point tracks, masks, centroids, shape descriptors — and finetune on them in isolation to find which ones actually help? That was the project.</p>
+          <p>This is an open question in robotics and computer vision research right now. As more of the planning stack moves into neural networks, the way these models represent the physical world matters a lot. I wrote a bit about the broader landscape <a href="/blog/2026/bitter-lesson-robotics/">here</a>, but this post is about a project I ran to try and probe this directly: what happens when you take a world model and train it to predict specific computer vision signals alongside its normal task? Does predicting depth make it better? Point tracks? Object shape?</p>
 
-          <h2>Why LeWorldModel</h2>
+          <p>I figured a classic ablation would be really incisive in cutting out the noise around what modalities were valuable to these models. Same model, same data, same training setup. The only variable is which signal you add on top. With this, we can isolate the effect of each modality and see what actually helps in foundation model training.</p>
 
-          <p>I chose LeWorldModel (LeWM) for two reasons. First, JEPA is genuinely promising as a paradigm — Joint Embedding Predictive Architecture, predicting in latent space instead of pixel space. The model doesn&#x27;t waste capacity reconstructing textures. It focuses on structure. Second, LeWM is small. ViT-Tiny encoder, about 7.6 million parameters, 192-dimensional latent. Small enough that I could actually iterate on it without needing a cluster.</p>
+          <h2>Foundation</h2>
 
-          <p>The way it works: a ViT-Tiny encoder compresses each 224×224 RGB frame into a 192-dim CLS token. A 6-layer transformer predictor takes a context window of 3 latent frames plus actions and predicts the next latent. The model never generates images. It predicts embeddings. Loss is MSE in latent space.</p>
+          <div class="krow">
+            <div class="kitem pr-2"><img src="/assets/lewm/lewmgifs/cube_2_half.gif" alt="LeWorldModel demo cube"></div>
+            <div class="kitem px-1"><img src="/assets/lewm/lewmgifs/pusht_2_half.gif" alt="LeWorldModel demo pusht"></div>
+            <div class="kitem px-1"><img src="/assets/lewm/lewmgifs/reacher_1_half.gif" alt="LeWorldModel demo reacher"></div>
+            <div class="kitem pl-2"><img src="/assets/lewm/lewmgifs/cube_5_half.gif" alt="LeWorldModel demo cube 2"></div>
+          </div>
+          <div class="krow mt-2">
+            <div class="kitem pr-2"><img src="/assets/lewm/lewmgifs/tworoom_2_half.gif" alt="LeWorldModel demo tworoom"></div>
+            <div class="kitem px-1"><img src="/assets/lewm/lewmgifs/pusht_1_half.gif" alt="LeWorldModel demo pusht 2"></div>
+            <div class="kitem px-1"><img src="/assets/lewm/lewmgifs/reacher_3_half.gif" alt="LeWorldModel demo reacher 2"></div>
+            <div class="kitem pl-2"><img src="/assets/lewm/lewmgifs/cube_4_half.gif" alt="LeWorldModel demo cube 3"></div>
+          </div>
+          <div class="krow mt-2">
+            <div class="kitem pr-2"><img src="/assets/lewm/lewmgifs/tworoom_3_half.gif" alt="LeWorldModel demo tworoom 2"></div>
+            <div class="kitem px-1"><img src="/assets/lewm/lewmgifs/pusht_2_half.gif" alt="LeWorldModel demo pusht 3"></div>
+            <div class="kitem px-1"><img src="/assets/lewm/lewmgifs/reacher_fail_half.gif" alt="LeWorldModel failure reacher"></div>
+            <div class="kitem pl-2"><img src="/assets/lewm/lewmgifs/tworoom_1_fail_half.gif" alt="LeWorldModel failure tworoom"></div>
+          </div>
 
-          <p>That&#x27;s both the strength and the limitation. You can&#x27;t just look at the output and see if the model learned anything. To visualize, I built a retrieval pipeline — for each predicted latent, find the nearest real frame in the dataset by L2 distance. It&#x27;s a proxy. The retrieved frame is a visual stand-in for whatever the model&#x27;s internal state represents. More on that later.</p>
+          <p>JEPA-style world models have become pretty popular for robotics planning. Perhaps the amount of JEPA-based models exceeds the amount of people that even understand JEPA at all, which is a group that I definitely would have belonged in. The core idea is that instead of predicting the next image, which wastes a ton of capacity on texture and lighting, you predict the next <em>latent state</em>. The model learns structure rather than pixels. This makes it naturally suited for action planning, where you care about what changes in the scene, not what shade of brown the countertop is.</p>
 
-          <p>Among the pretrained task weights available for LeWM, I went with the OG Cube weights because of 3D relevance — the cube task is synthetic manipulation with clear geometric structure, which seemed like the best starting point for a project about teaching geometry.</p>
+          <p>When <a href="https://le-wm.github.io/" target="_blank" rel="noopener noreferrer">LeWorldModel</a> came out as a new JEPA-based world model, I thought it would be a great candidate for this experiment. It's super compact at 15M parameters total and it's built around ViT-Tiny, roughly 7.6M params. That means it's small enough to iterate on freely with just my GPU. Being able to mess around with these models at a low investment is really vital for getting familiar with this field. No finetuning testbed for LeWorldModel seemed to exist, so I <a href="https://github.com/kevdozer1/leWN_finetune_toolkit" target="_blank" rel="noopener noreferrer">built one and released it</a> so I could try lots of things across a wide scope.</p>
 
-          <h2>Why BridgeData V2</h2>
+          <p>The way LeWM works is that a ViT encoder processes each frame into a single 192-dimensional CLS token, and then a small transformer predictor takes a window of these tokens plus actions and predicts the next one. The whole future of the scene has to compress through that single 192-dim vector. This is the kind of information that my eyes tend to glaze over but it ended up mattering later.</p>
 
-          <p>I needed real manipulation video. Not synthetic cubes that were too close to the source task, and not wild internet video that was too chaotic to extract clean signals from. BridgeData V2 sits in the right middle: real robot, real textures and clutter, tabletop kitchen manipulation, but structured enough that depth estimation and point tracking and segmentation all work end-to-end. It has 7-DOF action labels, state observations including gripper closure (useful for detecting contact events), and natural-language task descriptions I could filter on.</p>
+          <p>A key factor in JEPA models is that they aren't human-decodable. LeWorldModel mentions a pixel decoder in the paper but doesn't actually provide one. This decoder would translate predicted latents back into actual images, which would show us what the model thinks is going to happen. I'll come back to this problem.</p>
 
-          <p>I grabbed about 100 episodes. 2,920 total frames. The episodes are short — 15 to 78 frames at roughly 5 FPS, so like 3 to 10 seconds each. That shortness is a real limitation, but it&#x27;s also what made the extraction tractable.</p>
+          <p>LeWorldModel has existing <a href="https://huggingface.co/collections/quentinll/lewm" target="_blank" rel="noopener noreferrer">weights and datasets</a> available. The pretrained checkpoint I used was OGCube, the task closest to the 3D spatial reasoning I wanted to probe. But one synthetic cube isn't exactly a demanding test of generalization. I needed a more formidable dataset.</p>
 
-          <h2>Filtering for quality</h2>
+          <p><img src="/assets/lewm/bridgedata.gif" alt="BridgeData sample"></p>
 
-          <p>I didn&#x27;t just dump all 100 episodes into training. A huge part of making this work was choosing clips where extraction could actually succeed.</p>
+          <p><a href="https://rail-berkeley.github.io/bridgedata/" target="_blank" rel="noopener noreferrer">BridgeData</a> has real manipulation video of robot arms on all kinds of objects. Kitchen items, foods, containers, tools. It has 7-DOF action labels, gripper state observations, useful for detecting when the robot grabs something, and natural language task descriptions that I could filter on.</p>
 
-          <p>I built a weighted scoring system: task quality (prefer &quot;put X on Y&quot; and &quot;pick up&quot;, penalize cloth folding), episode length (15–40 frames is the sweet spot), track displacement (prefer &gt;60px total — if nothing moves much, what are we even learning?), mask quality (want 2–25% frame coverage with low temporal variance), depth quality (want &gt;2.0 dynamic range). This gave me a pilot of 13 episodes, 334 frames. Carefully curated.</p>
+          <p>BridgeData has about 60,000 trajectories. To iterate efficiently, I built a weighted scoring system to filter for the best clips: task quality, prefer "put X on Y" and "pick up", penalize cloth folding, episode length, 15 to 40 frames is the sweet spot, track displacement, if nothing moves much, what are we even learning, mask quality, want 2 to 25% frame coverage with low temporal variance, and depth quality, want dynamic range above 2.0. I selected 100 episodes randomly from the top 300 scorers. From those, I handpicked the 13 highest quality as a pilot set.</p>
 
-          <p>The full set kept all 100 episodes without filtering. That pilot-vs-full contrast ended up being one of the main findings of the whole project, but I didn&#x27;t know that yet.</p>
+          <h2>Data</h2>
 
-          <h2>The extraction pipeline</h2>
+          <p><img src="/assets/lewm/cropped.PNG" alt="Extraction pipeline overview"></p>
 
-          <p>The core engineering of this project was turning ordinary RGB robot video into structured packets of geometry-related signals. Each modality needed its own extraction step.</p>
+          <p>The whole point of this project was figuring out how to actually distill individual CV signals and format them in a way that a world model could derive value from. I extracted several modalities and then trained the model on each one in isolation to see which produced the best finetune.</p>
 
-          <p><strong>Depth:</strong> Video-Depth-Anything, ViTS encoder. Per-frame relative depth maps, temporally consistent. I used a scale-shift-invariant L1 loss for training, so relative depth is fine — no need for metric calibration.</p>
+          <p><img src="/assets/lewm/modality_masks.gif" alt="Masks modality"></p>
 
-          <p><strong>Point tracking:</strong> CoTracker3, offline mode. 20×20 grid gives 400 tracked points per frame with visibility flags. Later I built a foreground-biased variant that places ~60% of points on the object region, which improved object coverage from roughly 5 to 47 visible object tracks per frame. That improvement mattered a lot for interpretation later.</p>
+          <p><strong>Masks.</strong> Silhouettes of the object being manipulated. Here's a tricky labelling trick: to annotate these at scale, I used SAM 3's text-guided mode with the prompt "object being grabbed by robotic arm." This kind of flexible labelling is one of the more powerful capabilities of text-driven segmentation models. The masks tracked pretty well across most episodes. I also generated dilated versions of the masks with different buffer borders to test whether strictness mattered.</p>
 
-          <p><strong>Object masks:</strong> This was the hardest extraction by far — it gets its own section.</p>
+          <p><img src="/assets/lewm/modality_depth.gif" alt="Depth modality"></p>
 
-          <p><strong>Centroids:</strong> Backproject masked depth to 3D using camera intrinsics, average the 3D points. One [x,y,z] per frame. Simple.</p>
+          <p><strong>Depth.</strong> A map of how far each pixel is expected to be from the camera. Generated per-sequence with Video-Depth-Anything, ViTS encoder. Per-frame relative depth maps, temporally consistent. I used a scale-shift-invariant L1 loss for training, so relative depth works fine without metric calibration. By that I mean that I can get away with the depth not actually being set to any particular metric scale.</p>
 
-          <p><strong>Shape descriptors:</strong> A 10D vector from the backprojected object point cloud — centroid xyz, PCA extents, spread ratios, depth range, visibility proxy. Designed to be compact enough for the model&#x27;s bottleneck.</p>
+          <p>You can notice in some clips that the estimated depth of the static background drifts slightly over time, which isn't ideal. A better depth model would fix this, but for now it was serviceable.</p>
 
-          <p><strong>Pose estimation:</strong> I explored FoundationPose but it was blocked by CUDA toolkit and Visual Studio Build Tools dependencies. It just wouldn&#x27;t install cleanly. I&#x27;ve since heard that pose estimation doesn&#x27;t strictly need mesh priors anymore with some newer approaches, so this might not be as limited as I thought at the time. But it didn&#x27;t make it into the finished pipeline.</p>
+          <p>I also extracted masked depth, which is, uh, depth restricted to the area of the mask.</p>
 
-          <h2>The masking saga</h2>
+          <p><img src="/assets/lewm/modality_tracks.gif" alt="Point tracking modality"></p>
 
-          <p>Masking the manipulated object was supposed to be straightforward. It was not.</p>
+          <p><strong>Point tracking.</strong> These trace how individual points on objects move across frames. It gives us a direct signal about motion, like where things are going and how fast. These were generated with CoTracker3 in offline mode. A 20x20 grid gives 400 tracked points per frame with visibility flags. I later built a foreground-biased variant that places about 60% of points on the object region, improving object coverage from roughly 5 to 47 visible tracks per frame.</p>
 
-          <p>First I tried automatic motion-based prompting — pick the highest-displacement tracked-point cluster and feed it to SAM2. This almost always grabbed the gripper arm, because the arm moves the most. Obviously. Should have guessed that.</p>
+          <p><img src="/assets/lewm/modality_centroids.gif" alt="Centroids modality"></p>
 
-          <p>Then I tried a &quot;stationary then moves&quot; heuristic — find points that were still before contact and started moving after. Better, but SAM2 would sometimes latch onto the countertop near the object, or the destination container.</p>
+          <p><strong>Centroids.</strong> The center of our object. I generated these by backprojecting masked depth to 3D using camera intrinsics, averaging the 3D points. Isn't that actually kinda cool? The results looked great.</p>
 
-          <p>Then I tried text-guided segmentation — &quot;the object being picked up&quot; — using Moondream, SAM3, and Gemini. The science just isn&#x27;t there yet for this specific use case. Too unreliable.</p>
+          <p><img src="/assets/lewm/modality_shape_descriptor.gif" alt="Shape descriptors modality"></p>
 
-          <p>Then I tried using the contact signal from BridgeData as a segmentation prior. But the contact data is too coarse — it tells you <em>when</em> the robot is touching something, not <em>which pixels</em> are the object. Useful as a temporal prior (&quot;look around this frame&quot;), not as a mask.</p>
+          <p><strong>Shape descriptors.</strong> This is a compact standin for full 3D representations like point clouds, gaussian splats, or NeRFs. A 10-dimensional vector derived from the backprojected object point cloud: centroid xyz, PCA extents, spread ratios, depth range, and a visibility proxy. Designed to be small enough to not choke the model's bottleneck while still encoding something about position, shape, and orientation. Visualizing these got a bit weird. These were a bit messy but were a good way to prepare my pipeline to eventually handle those bigger 3D representations. If this doesn't make sense just forget about it.</p>
 
-          <p>The fix that actually worked: I built a tkinter annotation GUI where you click on the object in one frame, and SAM2 propagates the mask through the whole video. Manual, ugly, but it gave me trustworthy canonical masks for the pilot.</p>
+          <p>I didn't get around to pose estimation but that would be my next signal to look into, probably with something like FoundationPose.</p>
 
-          <h2>Packaging the data</h2>
+          <h2>Structure</h2>
 
-          <p>All extracted signals were packed into HDF5 files: pixels, action, observation, depth, contact, tracks, track_visibility, object_mask, object_centroid, and later object_shape for the compact descriptor condition.</p>
+          <p>All extracted signals were packed into HDF5 files: pixels, actions, observations, depth, contact, tracks, track visibility, object masks, object centroids, and shape descriptors. I used HDF5 because it handles large heterogeneous arrays well and supports compressed reads without loading everything into memory. Good format for finetuning.</p>
 
-          <p>This sounds boring but it was one of the most useful things the project produced. It turned vague ideas about &quot;using 3D in world models&quot; into a concrete dataset format and training interface. How you format data to actually be used for these things is half the battle and nobody talks about it.</p>
-
-          <h2>The auxiliary head setup</h2>
-
-          <p>All models start from the same pretrained LeWM checkpoint. All finetuned on the same BridgeData. The only difference: which extra supervision head is active during training.</p>
+          <p>I used auxiliary heads to activate modalities during training. Every finetuned model starts from the same pretrained LeWM checkpoint. Every model trains on the same BridgeData clips. The only difference between conditions is the extra supervision head that's turned on alongside the normal next-latent prediction loss. The base model always sees RGB and actions. The auxiliary head just adds an extra gradient signal from the chosen modality.</p>
 
           <ul>
-            <li><strong>A:</strong> Baseline — no auxiliary head, just standard finetuning</li>
-            <li><strong>B:</strong> Full-frame depth — predict a 56×56 depth map from the CLS token (~400K extra params)</li>
-            <li><strong>C family:</strong> Masked depth variants — tight mask, dilated masks (8px, 20px), weighted full-frame with 5× boost on object pixels</li>
-            <li><strong>D:</strong> Point tracks — predict 400×2 displacements from the CLS token (~135K extra params)</li>
-            <li><strong>E:</strong> Depth + tracks together</li>
-            <li><strong>F:</strong> Centroid — predict [x,y,z] from the CLS token (~37K extra params)</li>
-            <li><strong>G:</strong> Shape descriptor — predict 10D object geometry summary (~37K extra params)</li>
+            <li><strong>A:</strong> Baseline. No auxiliary head, just standard finetuning.</li>
+            <li><strong>B:</strong> Full-frame depth. Predict a 56x56 depth map from the CLS token, around 400K extra params.</li>
+            <li><strong>C family:</strong> Masked depth variants. Tight mask, dilated masks, 8px and 20px, and weighted full-frame with 5x boost on object pixels.</li>
+            <li><strong>D:</strong> Point tracks. Predict 400x2 displacements from the CLS token, around 135K extra params.</li>
+            <li><strong>E:</strong> Depth + tracks together.</li>
+            <li><strong>F:</strong> Centroid. Predict [x,y,z] from the CLS token, around 37K extra params.</li>
+            <li><strong>G:</strong> Shape descriptor. Predict 10D object geometry summary, around 37K extra params.</li>
           </ul>
 
-          <p>All auxiliary losses weighted at 0.1. Training: AdamW, lr=5e-5, batch 16, 20 epochs, bf16, 3–10 seeds per condition. I did change some encoding dimension architecture to support the auxiliary heads, but the core LeWM was kept intact.</p>
+          <p>All auxiliary losses weighted at 0.1. Training: AdamW, lr=5e-5, batch 16, 20 epochs, bf16 mixed precision, 3 to 10 seeds per condition. I made some small encoding dimension changes to support the auxiliary heads, but the core LeWM architecture was kept intact.</p>
 
-          <p>This made the project a real controlled ablation. Same data, same base model, different extra supervision signal. Fair comparison.</p>
+          <p>This setup made the project a clean ablation. Same data, same base model, same optimizer. The impact of each extra supervision signal is isolated. If depth helps, it's because depth helped, not because we changed three other things at the same time. Nice!</p>
 
-          <h2>Why full 3D was dropped</h2>
+          <p>As an aside, I must confess that I am a 3D vision researcher. I should note that this project was originally going to be a much more extensive look at explicit 3D representations for world model training. Gaussian splats, NeRFs, multi-view reconstruction, the whole deal. I have some <a href="/blog/2025/non-sequential-sfm/">ideas about how to make that work efficiently</a>.</p>
 
-          <p>I need to be direct about this because it&#x27;s important. The original entire purpose of this project was to test explicit 3D representations for world model training — point clouds, Gaussian splats, maybe NeRF-like structure. That was the dream.</p>
+          <p>But I dropped that ambition halfway through. Not for compute reasons as you might expect, but because BridgeData has a fixed overhead camera. Explicit 3D reconstruction really loses its appeal when the camera isn't moving. Multiple frames from the same viewpoint give you the same point cloud twice. There's no novel geometric information frame to frame.</p>
 
-          <p>It got deferred. Not because the idea is wrong, but because this specific setup is the wrong place to test it.</p>
+          <p>I could have used a zero-shot 3D generation tool like <a href="https://ai.meta.com/research/sam3d/" target="_blank" rel="noopener noreferrer">SAM3D</a> to reconstruct a shape from a single frame. But I decided that if the experiment was going to be honest, I should save proper 3D experiments for a dataset with actual camera motion. Wrist cameras would be interesting for this. You could even have two wrists collaborating on one reconstruction, a la my earlier non-sequential SfM blogpost.</p>
 
-          <p>Static monocular cameras do not allow 3D vision to shine. BridgeData has a fixed overhead camera. Gaussian splatting needs multi-view or camera motion. NeRF needs the same. Two frames from the same fixed camera give you the same point cloud twice — there&#x27;s no real geometric information gain frame to frame. Monocular depth gives you shape up to an unknown scale factor, which is useful for auxiliary supervision but not for real 3D reconstruction.</p>
+          <p>So for now I focused on more fundamental CV signals: depth, tracks, masks, centroids. The shape descriptor served as a bridge towards 3D without requiring multi-view data.</p>
 
-          <p>So the project became &quot;boring 3D signals&quot; — depth, tracks, masks, centroids, compact shape descriptors. The things I could actually extract cleanly and test fairly. The full explicit 3D work is the focus of a future project, but it needs different data.</p>
+          <p>I'll still be able to reuse this entire finetuning and extraction harness for a future 3D experiment, which is nice. Finding the best way for explicit 3D to inform an implicit understanding of form and collision is still very much on my list.</p>
 
-          <p>The harness can handle very limited point cloud work though, and I should show that — the backprojected object clouds look reasonable frame-by-frame, they&#x27;re just not multi-view reconstructions.</p>
+          <h2>Results: Pilot</h2>
 
-          <h2>Pilot results</h2>
-
-          <p>On the curated 13-episode pilot (334 frames), things looked genuinely promising:</p>
+          <p>On the curated 13-episode pilot, only the best clips, things looked genuinely promising:</p>
 
           <div class="table-responsive"><table class="table table-sm table-borderless">
             <tr><th>Condition</th><th>Signal</th><th>vs Baseline</th></tr>
             <tr><td>B</td><td>Depth</td><td>-11.5%</td></tr>
             <tr><td>C4</td><td>Weighted depth</td><td>-14.5%</td></tr>
-            <tr><td>E</td><td>Depth+Tracks</td><td>-14.0%</td></tr>
+            <tr><td>E</td><td>Depth + tracks</td><td>-14.0%</td></tr>
             <tr><td>G</td><td>Shape (10D)</td><td>-6.1%</td></tr>
             <tr><td>D</td><td>Tracks alone</td><td>-4.9%</td></tr>
             <tr><td>F</td><td>Centroid</td><td>-3.0%</td></tr>
           </table></div>
 
-          <p>Depth worked. Depth-based combinations were the strongest. Models genuinely beat the static baseline on episodes with visible object motion. This wasn&#x27;t noise — the models learned dynamics.</p>
+          <p><em>Lower is better. These numbers are the change in prediction MSE, next-latent prediction error, relative to the baseline, measured across seeds. Negative means the auxiliary signal improved the model.</em></p>
 
-          <h2>The mask family sweep</h2>
+          <p>Depth worked great. Depth-based combinations were the strongest overall. The models genuinely beat the static baseline on episodes with clear object motion. This means they learned actual dynamics and spatial relations better. Woohoo!</p>
 
-          <p>I tried different sizes of masks to see whether focusing depth supervision on the object or allowing visualization of the immediate surroundings would help.</p>
+          <p>Tracks were one of the more interesting results. The first round with a uniform grid of tracking points gave maybe 5 tracks actually on the object per frame. This didn't help, so I thought maybe the points just weren't landing where they mattered.</p>
+
+          <p>To attempt a fix, I built foreground-biased tracking: about 47 object tracks per frame. The tracks genuinely landed on the object and looked really good upon a visual audit, but the results remained middling.</p>
+
+          <p>This is actually a useful result because it tells you the failure is with the architecture instead of the data quality. A single 192-dim CLS token cannot usefully encode 400 independent 2D displacements through a flat MLP. The architecture is the bottleneck, not the signal.</p>
+
+          <p>I've recently seen <a href="https://motion-forecasting.github.io/" target="_blank" rel="noopener noreferrer">other research</a> that had much better results with point tracks using a fundamentally different approach. Their model treats each track as its own token with local visual features from a frozen DINOv3 backbone, plus explicit occlusion handling. They train with a diffusion objective on reparameterized point velocities, which focuses learning on motion dynamics rather than absolute coordinates. Tracks aren't dead as a concept for world models, but maybe they're dead in my CLS-only formulation.</p>
+
+          <p>The mask family sweep was surprisingly clean, at least in terms of what it tells me:</p>
 
           <div class="table-responsive"><table class="table table-sm table-borderless">
             <tr><th>Condition</th><th>Approach</th><th>vs Baseline</th></tr>
             <tr><td>B</td><td>Full-frame depth</td><td>-10.5%</td></tr>
-            <tr><td>C4</td><td>Full-frame + 5× weight on object</td><td>-10.9%</td></tr>
+            <tr><td>C4</td><td>Full-frame + 5x weight on object</td><td>-10.9%</td></tr>
             <tr><td>C1</td><td>Tight object mask only</td><td>-7.5%</td></tr>
             <tr><td>C2</td><td>8px dilated mask</td><td>-5.8%</td></tr>
             <tr><td>C3</td><td>20px dilated mask</td><td>-2.3%</td></tr>
           </table></div>
 
-          <p>The pattern is monotonic and kind of surprising: the more you restrict depth supervision to the object region, the worse it gets. The reason is the scale-shift-invariant normalization — when you normalize within a tiny masked region (~2% of pixels), the scale and shift estimates become noisy. Full-frame normalization is more stable. If you&#x27;re using scale-shift-invariant depth loss, just don&#x27;t mask it.</p>
+          <p>The pattern is monotonic. The more you restrict depth supervision to the object region, the worse it gets. The reason is the scale-shift-invariant normalization. When you normalize within a tiny masked region, around 2% of pixels, the scale and shift estimates become noisy. Full-frame normalization is much more stable. If you're using scale-shift-invariant depth loss, maybe you just shouldn't mask it.</p>
 
-          <h2>The tracks result</h2>
+          <p>Finetuning directly on the masks themselves, as a target signal, not just a crop boundary, could also be interesting but I didn't try it here. Maybe soon.</p>
 
-          <p>Tracks were one of the most interesting negative results.</p>
+          <h2>Results: Full Scale</h2>
 
-          <p>First round with uniform tracking — ~5 object tracks per frame — they did nothing. Okay, maybe the data quality was bad.</p>
-
-          <p>So I built foreground-biased tracking: ~47 object tracks per frame. The visual audit confirmed the tracks genuinely landed on the object. They looked good.</p>
-
-          <p>They still did nothing.</p>
-
-          <p>This matters because it means the failure is architectural, not about data quality. A single 192-dim CLS token cannot usefully encode 400 independent 2D displacements through a flat MLP. The architecture is the bottleneck. There&#x27;s recent work on trajectory-token approaches that treat each track as its own token with local visual features and occlusion handling — that&#x27;s a fundamentally different architecture, and it seems to work. Tracks aren&#x27;t dead as a concept. They&#x27;re dead in this formulation.</p>
-
-          <h2>The sign flip at full scale</h2>
-
-          <p>Then I ran the full 100-episode set. And the story flipped.</p>
+          <p>For the full-scale run I focused on the most promising conditions: A, B, D, and E across 100 episodes, 2920 frames.</p>
 
           <div class="table-responsive"><table class="table table-sm table-borderless">
             <tr><th>Condition</th><th>Pilot (13 ep)</th><th>Full (100 ep)</th></tr>
@@ -212,95 +221,58 @@
             <tr><td>D Tracks</td><td>-4.9%</td><td>+0.2%</td></tr>
           </table></div>
 
-          <p>The advantages didn&#x27;t just shrink. They reversed direction. At 100 episodes, the baseline learned everything the auxiliary heads were trying to teach, and the extra loss terms became regularization noise. Absolute MSE dropped about 4× from pilot to full, confirming the model had much more to learn from the larger set. The auxiliary heads acted as inductive bias — useful when data was scarce, a burden when there was enough diversity to learn the structure end-to-end.</p>
+          <p>Dang. The advantages flipped signage. At 100 episodes, the extra supervision signals made things marginally worse. Absolute MSE dropped about 4x from pilot to full, which means the model had a lot more to learn from the larger dataset and didn't need the auxiliary crutch to get there.</p>
 
-          <p>This is the main finding of the project. Not &quot;3D helps&quot; or &quot;3D doesn&#x27;t help.&quot; It&#x27;s: explicit 3D supervision can act as a useful low-data inductive bias, but in this CLS-only setup it does not survive broader finetuning. The sign flip is clean: -14% at 13 episodes, +1% at 100. Same architecture, same loss, same optimizer. Only variable is data scale.</p>
+          <p>This resonates with a <a href="https://x.com/DominiqueCAPaul/status/2042658951301382464" target="_blank" rel="noopener noreferrer">recent finding from Hugging Face</a> on finetuning Pi0 for shirt folding: algorithmic tweaks gave 5 to 20% improvement, but training on only the top 20% of data gave +50%. Data quality over quantity. In our case, the curated pilot was a high-quality dataset where every extra signal compounded. At full scale, the baseline just absorbed all of that through sheer diversity.</p>
 
-          <h2>What is CLS and why does it matter so much here?</h2>
+          <p>This is the main finding, which is that explicit auxiliary supervision acts as an inductive bias. On a small curated set, it fills in gaps the model can't learn on its own. On a broader set, the model learns the same structure implicitly and the auxiliary loss becomes noise. This makes our sign flip pretty clean: -14% at 13 episodes, +1% at 100.</p>
 
-          <p>This needs explaining because it came up constantly.</p>
+          <p>Remember from earlier that LeWM compresses everything into one 192-dim CLS token for prediction. This actually explains a lot of the condition-specific results.</p>
 
-          <p>LeWM&#x27;s ViT encoder produces a CLS token AND a full 16×16 grid of 196 patch tokens. The patch tokens carry spatial layout information — where things are, what&#x27;s next to what. But the prediction path only uses the CLS token. The 196 patch tokens are discarded before prediction.</p>
+          <p>The ViT encoder produces that CLS token, but it <em>also</em> produces a full 16x16 grid of 196 patch tokens. These patch tokens carry spatial layout: where things are in the image, what's next to what. But the prediction path throws them away. Only the CLS token survives into the predictor. So every object, every spatial relationship in the frame, has to fit through that single 192-dim vector.</p>
 
-          <p>So the entire scene — every object, every spatial relationship — has to compress into one 192-dimensional vector. That&#x27;s the bottleneck.</p>
+          <p>Once you see it that way, the results make more sense. Depth worked at pilot scale because "near versus far" is a global scene property. It's the kind of thing that can reasonably compress into one embedding. Point tracks failed because 400 independent (x,y) displacements are fundamentally local information, and a flat MLP from one global vector just can't reconstruct them. Centroid was too weak in the opposite direction: three numbers don't generate enough gradient signal to meaningfully reshape a 192-dim space. The takeaway is that "explicit 3D" isn't just about extraction quality. The model architecture has to be shaped to actually use the signal you're giving it.</p>
 
-          <p>This explained almost everything:</p>
+          <h2>Evaluation and Visualization</h2>
 
-          <ul>
-            <li>Why full-frame depth could still help (depth is a global scene property — near vs far — that maps well to a single embedding)</li>
-            <li>Why raw point tracks couldn&#x27;t help (400 independent local displacements can&#x27;t squeeze through one global vector and a flat MLP)</li>
-            <li>Why tiny compressed signals like centroid were too weak (not enough gradient signal from 3 numbers to reshape a 192-dim space)</li>
-            <li>Why &quot;explicit 3D&quot; isn&#x27;t just about extraction quality — the architecture has to be able to use the signal</li>
-          </ul>
+          <p>One of the biggest things I've learned in research is that when you're stuck, visualize the results as best you can to understand why. And then when you're presenting information to someone else, visualization is again vital to getting across what a system actually does. OFten the best thing I can do to understand a model is just click through lots of the training data to see what the model is seeing. So visualization of all sorts is a pretty central guiding light to how I do research. Graphs and metrics can tell me what happened, and displays can tell me why.</p>
 
-          <p>Probably the single biggest lesson of the whole project.</p>
+          <p><img src="/assets/lewm/dashboardss1.png" alt="Dashboard screenshot 2"></p>
+          <div class="caption">One half of the per-episode dashboard: packet context, rollout GIFs, and model comparison.</div>
 
-          <h2>Evaluation and visualization</h2>
+          <p>The packet viewer ended up being one of the smarter things this project grew into. For each episode I could inspect RGB, depth, track overlays, mask overlays, and object-only depth side by side. This stopped the project from being pure metric worship. When the visual audit showed depth looked plausible, tracks landed on the right objects, and masks were segmenting the right things, it meant that later negative results couldn't be blamed on broken extraction. The data was good. The model just couldn't use some of it.</p>
 
-          <p>Eval suites are huge. When I was stuck — and I was stuck a lot — the thing that got me unstuck was always: evaluate and visualize what your data and results actually look like. Stop guessing. Look.</p>
+          <p><img src="/assets/lewm/dashboardss2.png" alt="Dashboard screenshot 1"></p>
+          <div class="caption">The other half: retrieval distance over time, stability metrics, and per-episode curation tags.</div>
 
-          <p><strong>The packet viewer</strong> was one of the smartest things the project grew into. For each episode I could inspect RGB, depth, track overlays, mask overlays, object-only depth, scene point cloud, object point cloud. This stopped the project from being pure metric worship. When the 10-episode audit showed depth looked plausible, tracks landed on objects, masks were on the right things, and object clouds were small but recognizable — that meant later negative results couldn&#x27;t be blamed on broken extraction.</p>
+          <p>Since the model predicts latents and not images, I needed a way to actually see what it was predicting. The approach I settled on was retrieval: for each predicted latent, search the entire dataset for the real frame whose latent is closest by L2 distance, and display that frame. It's a visual proxy. If the model predicts a latent that's close to "frame 47 of episode 3," we show that frame. The retrieved image isn't what the model generated, but it reflects what the model's internal state looks like.</p>
 
-          <p><strong>Retrieval rollout dashboards</strong> showed side-by-side GIFs of ground truth vs static baseline vs model predictions via nearest-neighbor retrieval. I had two retrieval modes: global search across all frames (honest but choppy) and same-episode search (smooth and restricted). Distance-over-time plots for each model. Auto-curation tags that labeled episodes as &quot;static-dominates&quot; or &quot;models-beat-static&quot; or &quot;tight-tie&quot; — savvy quality-of-life stuff for finding the best presentation examples quickly.</p>
+          <p>The retrieval rollout dashboards showed side-by-side GIFs of ground truth versus static baseline versus model predictions via this nearest-neighbor retrieval. Two retrieval modes: global search across all frames, honest but choppy, and same-episode search, smooth, good for presentations. I built auto-curation tags that labeled episodes as "static-dominates" or "models-beat-static" or "tight-tie" so I could quickly browse for the best examples. These are some useful QoL improvements when you're sifting through a bunch of episodes.</p>
 
-          <p><strong>The decoder.</strong> I did train a cross-attention decoder to map latents back to RGB. It was blurry. Patchy grids, objects dissolving into mush. 50 epochs on 334 frames is not enough. I&#x27;m showing it anyway because it&#x27;s honest about where the project&#x27;s visualization limits are, and because the retrieval approach is the real evidence.</p>
+          <p><img src="/assets/lewm/episode_002.gif" alt="Retrieval rollout comparison"></p>
+          <div class="caption">Here you can see the decoder versus retrieval strategy for visualization. The right two columns are decoded from latent, the middle two are retrieved from the dataset.</div>
 
-          <h2>What I built — the infrastructure</h2>
+          <p>I tried to code a pixel decoder for JEPA but I just kept getting these results that looked like dementors. Since LeWorldModel predicts the next latent state instead of the resulting image, the model not producing human-legible outputs creates a fundamental tension in visualization. I tried training a cross-attention decoder to map latents back to RGB, but the results were patchy. It's been much easier to use the retrieval strategy where the predicted latent is matched to the most similar real image in the full reference corpus. Since visualization is so important and JEPA naturally resists human legibility, this retrieval approach has been the main way I've built understanding of what the model is actually learning.</p>
 
-          <p>Beyond the experiment results, the project produced a bunch of reusable stuff:</p>
+          <h2>Looking Forward</h2>
 
-          <ul>
-            <li><strong>A LeWM finetuning harness.</strong> Config-driven, supports arbitrary auxiliary heads. I released a standalone decluttered version of this so other people can finetune LeWM on their own data without inheriting all my experimental clutter.</li>
-            <li><strong>A structured 3D extraction pipeline.</strong> Depth, tracks, masks, object clouds, centroids, shape descriptors, from monocular robot video.</li>
-            <li><strong>Qualitative set filtering.</strong> The weighted scoring system for episode selection.</li>
-            <li><strong>HDF5 dataset packaging</strong> for multi-signal robot video.</li>
-            <li><strong>A packet visualization and auditing system.</strong></li>
-            <li><strong>Retrieval-based rollout visualization</strong> for latent world models that don&#x27;t generate pixels.</li>
-          </ul>
+          <p>There were a couple key limitations to go over first.</p>
 
-          <p>These are useful regardless of whether depth won or lost.</p>
+          <p>The videos are short. 3 to 10 seconds each. Long-horizon dynamics barely exist in this data. Even the full-scale set of 100 episodes is modest; this is a small-data to modest-data experiment, not a scaling study. The images are 224x224, all from the same overhead camera angle, in visually similar kitchen scenes. ViT-Tiny at 7.6M parameters is a small model. A bigger model might have enough capacity to keep benefiting from auxiliary signals even with more data. I am just one guy with one GPU but could probably do more.</p>
 
-          <h2>Things to note</h2>
+          <p>I'm measuring latent prediction quality, not downstream task success. The real test would be whether better latents lead to better robot behavior. That's a harder experiment and I haven't run it. Full-scale only covered conditions A, B, D, and E. Not every condition got the 100-episode treatment. The depth estimation drifts on static backgrounds in some clips, which is a model quality issue that a better depth backbone would fix. And the CLS bottleneck is very specific to this architecture. A model that doesn't throw away spatial tokens might tell a completely different story.</p>
 
-          <p><strong>CLS tokens absorb dense global signals like depth way better than spatially local signals like point tracks.</strong> This sounds obvious in retrospect but I had to learn it the hard way. Depth is &quot;the whole scene is near or far&quot; — that compresses into one vector fine. Point tracks are &quot;this specific point moved 3px right and that specific point moved 7px up&quot; — that doesn&#x27;t compress well at all.</p>
+          <p>A better RGB video to monocular depth model could definitely help. You can see in earlier visualizations that the environment in our depth videos gets "warmer" as the arm itself moves around. The environment would ideally stay static in the depth estimation.</p>
 
-          <p><strong>Even if a signal is extracted well, the architecture needs to be friendly to it.</strong> I improved track quality a lot. It didn&#x27;t matter. The bottleneck was the model, not the data.</p>
+          <p>Multi-view or moving camera data would be super awesome to try. Wrist cameras, maybe. This would unlock proper Gaussian splatting and NeRF experiments. The original project vision requires it. I'm also thinking about how to make this work on web video, which is almost always monocular and mobile. The pipeline needs to handle both.</p>
 
-          <p><strong>Curation was the biggest value add.</strong> The carefully filtered pilot was where everything looked promising. The unfiltered full set is where the gains disappeared. That&#x27;s partly about data quality and partly about the marginal value of auxiliary supervision decreasing with more data. Either way — curation mattered more than I expected.</p>
+          <p>The tracks could be made better in a few ways. Trajectory tokens could help. Instead of predicting 400 displacements from one CLS vector, treat each track as its own token with local visual context. The literature suggests this works. It's a fundamentally different architecture and probably the right formulation for making tracks useful. Or maybe a patch-aware predictor could read the 196 patch tokens instead of just CLS. Then some spatially rich signals might actually get through the bottleneck. This would test whether the negative track results are about tracks being useless or about the architecture being unable to use them.</p>
 
-          <h2>Limitations</h2>
+          <h2>Conclusion</h2>
 
-          <p>I want to be clear about these:</p>
+          <p>I built a LeWorldModel finetuning and 3D extraction testbed on real robot manipulation video. I tested which explicit vision signals help latent prediction. On a small, curated pilot, depth-based supervision gave real gains. On a broader 100-episode run, those gains disappeared or reversed. The auxiliary heads became noise generators the more data there actually was.</p>
 
-          <ul>
-            <li><strong>Short videos.</strong> 3–10 seconds each. Long-horizon dynamics barely exist in this data.</li>
-            <li><strong>Small set.</strong> Even 100 episodes is modest. This is small-data → modest-data, not small → large.</li>
-            <li><strong>Limited visual detail.</strong> 224×224, overhead view, similar-looking kitchens.</li>
-            <li><strong>Small model.</strong> ViT-Tiny, 192-dim latent, 7.6M parameters. A bigger model might have enough capacity to benefit from auxiliary signals even with more data.</li>
-            <li><strong>Not measuring downstream task success.</strong> I&#x27;m measuring latent prediction quality (pred_mse), not policy performance or manipulation success rate. The real test would be whether better latents → better robot behavior.</li>
-            <li><strong>No pose estimation, no explicit 3D.</strong> The full splat/NeRF/pose pipeline was deferred.</li>
-            <li><strong>Decoder was too weak</strong> to be primary visual evidence.</li>
-            <li><strong>Full-scale only ran A, B, D, E.</strong> Not all conditions got the full 100-episode treatment.</li>
-            <li><strong>The CLS bottleneck is very specific to this architecture.</strong> A patch-aware predictor or a model that doesn&#x27;t throw away spatial tokens might tell a completely different story.</li>
-          </ul>
-
-          <h2>What&#x27;s next</h2>
-
-          <p><strong>I want multi-view or moving camera data.</strong> Wrist cameras, maybe. This would unlock real Gaussian splatting and NeRF experiments. The original project vision requires it. But I&#x27;m also thinking about how to enable training on wide swaths of web video, which is going to be monocular and mobile almost certainly. So the pipeline needs to work for both.</p>
-
-          <p><strong>Trajectory tokens.</strong> Instead of predicting 400 displacements from one CLS vector, treat each track as its own token with local visual context. The literature suggests this works. It&#x27;s a fundamentally different architecture and probably the right way to make tracks useful.</p>
-
-          <p><strong>Patch-aware predictor.</strong> If the predictor could read the 196 patch tokens instead of just CLS, spatially rich signals might actually get through the bottleneck.</p>
-
-          <p><strong>Scale vs curation.</strong> The interaction between inductive bias and data scale is the real open question. Does the sign flip hold at 1000 episodes? At 10,000? With a bigger model? The finding is real in this regime but I don&#x27;t know how general it is.</p>
-
-          <h2>The takeaway</h2>
-
-          <p>I built a LeWorldModel finetuning and 3D extraction testbed on real robot manipulation video. I tested which explicit 3D signals help latent prediction. On a tiny curated pilot, depth-based supervision gave real gains. On a broader 100-episode run, those gains disappeared or reversed. The auxiliary heads became noise generators the more data there actually was.</p>
-
-          <p>The result is a clean scaling paradox: explicit 3D supervision works as a low-data inductive bias, but in this CLS-only setup it doesn&#x27;t survive broader finetuning. The project also showed that signal quality alone isn&#x27;t enough — the architecture has to be able to use the signal, and the form of supervision matters as much as the semantic content.</p>
-
-          <p>This isn&#x27;t a success story about 3D helping world models. It&#x27;s a documented experiment with real infrastructure, real extraction, real ablations, and honest results. The sign flip is the finding. Same architecture, same loss, same optimizer, same data source. Only variable is data scale. That&#x27;s reproducible and worth knowing about.</p>
+          <p>Beyond the specific results, the important thing has been gaining hands-on familiarity with world models, action planning, finetuning data pipelines, formatting large amounts of video, and scaffolding individual research projects. I look forward to using all of these skills more!</p>
         </article>
       </div>
     </div>
