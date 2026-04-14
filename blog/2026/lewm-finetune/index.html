@@ -72,6 +72,8 @@
 
           <h2>Foundation</h2>
 
+          <p>JEPA-style world models have become pretty popular for robotics planning. Perhaps the amount of JEPA-based models exceeds the amount of people that even understand JEPA at all, which is a group that I definitely would have belonged in. The core idea is that instead of predicting the next image, which wastes a ton of capacity on texture and lighting, you predict the next <em>latent state</em>. The model learns structure rather than pixels. This makes it naturally suited for action planning, where you care about what changes in the scene, not what shade of brown the countertop is.</p>
+
           <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
               <div style="writing-mode: vertical-rl; transform: rotate(180deg); font-weight: bold; font-size: 0.9rem; white-space: nowrap; min-width: 1.5rem; text-align: center;">Cube</div>
@@ -142,8 +144,7 @@
               </div>
             </div>
           </div>
-
-          <p>JEPA-style world models have become pretty popular for robotics planning. Perhaps the amount of JEPA-based models exceeds the amount of people that even understand JEPA at all, which is a group that I definitely would have belonged in. The core idea is that instead of predicting the next image, which wastes a ton of capacity on texture and lighting, you predict the next <em>latent state</em>. The model learns structure rather than pixels. This makes it naturally suited for action planning, where you care about what changes in the scene, not what shade of brown the countertop is.</p>
+          <div class="caption">Visualizations of LeWorldModel outputs.</div>
 
           <p>When <a href="https://le-wm.github.io/" target="_blank" rel="noopener noreferrer">LeWorldModel</a> came out as a new JEPA-based world model, I thought it would be a great candidate for this experiment. It's super compact at 15M parameters total and it's built around ViT-Tiny, roughly 7.6M params. That means it's small enough to iterate on freely with just my GPU. Being able to mess around with these models at a low investment is really vital for getting familiar with this field. No finetuning testbed for LeWorldModel seemed to exist, so I <a href="https://github.com/kevdozer1/leWN_finetune_toolkit" target="_blank" rel="noopener noreferrer">built one and released it</a> so I could try lots of things across a wide scope.</p>
 
@@ -162,6 +163,7 @@
           <h2>Data</h2>
 
           <p><img src="/assets/lewm/cropped.PNG" alt="Extraction pipeline overview"></p>
+          <div class="caption">Here you can see the default RGB modality as well as three key additional modalites for a few frames of an episode.</div>
 
           <p>The whole point of this project was figuring out how to actually distill individual CV signals and format them in a way that a world model could derive value from. I extracted several modalities and then trained the model on each one in isolation to see which produced the best finetune.</p>
 
@@ -225,7 +227,7 @@
 
           <p>On the curated 13-episode pilot, only the best clips, things looked genuinely promising:</p>
 
-          <p><img src="/assets/lewm/chart_pilot_results.png" alt="Pilot results chart"></p>
+          <p><img src="/assets/lewm/chart_pilot_results.png" alt="Pilot results chart" style="display: block; width: 100%; max-width: 760px; margin: 0 auto;"></p>
           <div class="caption">Pilot ablation results across auxiliary supervision signals. Lower is better relative to the baseline.</div>
 
           <p>Depth worked great. Depth-based combinations were the strongest overall. The models genuinely beat the static baseline on episodes with clear object motion. This means they learned actual dynamics and spatial relations better. Woohoo!</p>
@@ -240,7 +242,7 @@
 
           <p>The mask family sweep was surprisingly clean, at least in terms of what it tells me:</p>
 
-          <p><img src="/assets/lewm/chart_mask_sweep.png" alt="Mask sweep chart"></p>
+          <p><img src="/assets/lewm/chart_mask_sweep.png" alt="Mask sweep chart" style="display: block; width: 100%; max-width: 760px; margin: 0 auto;"></p>
           <div class="caption">Mask sweep results. Restricting depth supervision to the object region made the scale-shift-invariant depth loss less stable.</div>
 
           <p>The pattern is monotonic. The more you restrict depth supervision to the object region, the worse it gets. The reason is the scale-shift-invariant normalization. When you normalize within a tiny masked region, around 2% of pixels, the scale and shift estimates become noisy. Full-frame normalization is much more stable. If you're using scale-shift-invariant depth loss, maybe you just shouldn't mask it.</p>
@@ -251,7 +253,7 @@
 
           <p>For the full-scale run I focused on the most promising conditions: A, B, D, and E across 100 episodes, 2920 frames.</p>
 
-          <p><img src="/assets/lewm/chart_sign_flip.png" alt="Pilot to full sign flip chart"></p>
+          <p><img src="/assets/lewm/chart_sign_flip.png" alt="Pilot to full sign flip chart" style="display: block; width: 100%; max-width: 760px; margin: 0 auto;"></p>
           <div class="caption">The sign flip from curated pilot to broader finetuning. The same auxiliary signals that helped in low-data settings turned into mild noise at full scale.</div>
 
           <p>Dang. The advantages flipped signage. At 100 episodes, the extra supervision signals made things marginally worse. Absolute MSE dropped about 4x from pilot to full, which means the model had a lot more to learn from the larger dataset and didn't need the auxiliary crutch to get there.</p>
