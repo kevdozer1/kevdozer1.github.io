@@ -70,6 +70,10 @@
 
           <p>I figured a classic ablation experiment would be really incisive in cutting out the noise around what modalities were valuable to these models. Same model, same data, same training setup. The only variable is which signal you add on top. With this, we can isolate the effect of each modality and see what actually helps in foundation model training.</p>
 
+          <br>
+          <p style="text-align: center;"><em>I ran a controlled fine-tuning ablation on a JEPA-style world model to test which explicit vision signals (depth, tracks, masks, centroids, shape) actually help. Depth-conditioned supervision improved next-latent prediction by up to 14.5% on a 13-episode pilot, then collapsed at 100 episodes. The full writeup is also available as an <a href="/assets/pdf/lewm_finetune_paper.pdf" target="_blank" rel="noopener noreferrer">arXiv-style paper</a>.</em></p>
+          <br>
+
           <h2>Foundation</h2>
 
           <p>JEPA-style world models have become pretty popular for robotics planning. Perhaps the amount of JEPA-based models exceeds the amount of people that even understand JEPA at all. I certainly didn't! The core idea is that instead of predicting the next image, which wastes a ton of capacity on texture and lighting, you predict the next <em>latent state</em>. The model learns structure rather than pixels. This makes it naturally suited for action planning, where you care about what changes in the scene, not what shade of brown the countertop is.</p>
