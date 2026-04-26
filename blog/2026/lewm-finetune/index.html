@@ -64,15 +64,14 @@
           <p class="post-meta">April 12, 2026</p>
         </header>
         <article class="post-content">
+          <p style="text-align: center;"><em>I ran a controlled fine-tuning ablation on a JEPA-style world model to test which explicit vision signals (depth, tracks, masks, centroids, shape) actually help. Depth-conditioned supervision improved next-latent prediction by up to 14.5% on a 13-episode pilot, then collapsed at 100 episodes. The full writeup is also available as an <a href="/assets/pdf/lewm_finetune_paper.pdf" target="_blank" rel="noopener noreferrer">arXiv-style paper</a>.</em></p>
+          <hr style="width: 20%; margin: 1.5rem auto;">
+
           <p>How can a robot learn to understand the space around it? Not just detect objects or plan a path, but develop some internal sense of depth, shape, and motion that generalizes across tasks?</p>
 
           <p>This is an open question in robotics and computer vision research right now. As more of the planning stack moves into neural networks, the way these models represent the physical world matters a lot. I wrote a bit about the broader landscape <a href="/blog/2026/bitter-lesson-robotics/">here</a>, but this post is about a project I ran to try and probe this directly: what happens when you take a world model and train it to predict specific computer vision signals alongside its normal task? Does predicting depth make it better? Point tracks? Object shape?</p>
 
           <p>I figured a classic ablation experiment would be really incisive in cutting out the noise around what modalities were valuable to these models. Same model, same data, same training setup. The only variable is which signal you add on top. With this, we can isolate the effect of each modality and see what actually helps in foundation model training.</p>
-
-          <br>
-          <p style="text-align: center;"><em>I ran a controlled fine-tuning ablation on a JEPA-style world model to test which explicit vision signals (depth, tracks, masks, centroids, shape) actually help. Depth-conditioned supervision improved next-latent prediction by up to 14.5% on a 13-episode pilot, then collapsed at 100 episodes. The full writeup is also available as an <a href="/assets/pdf/lewm_finetune_paper.pdf" target="_blank" rel="noopener noreferrer">arXiv-style paper</a>.</em></p>
-          <br>
 
           <h2>Foundation</h2>
 
