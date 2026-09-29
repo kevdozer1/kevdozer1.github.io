@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Training chatbots to use robots | kevdozer1.com</title>
+    <title>How chatbotics works | kevdozer1.com</title>
     <meta name="author" content="Kevin Hopkins">
-    <meta name="description" content="What a robot's scene needs, written as text, for a language model to act on it: 19 rounds of experiments with a fast planner, a slower model that writes goals, and simulated robots.">
+    <meta name="description" content="Chatbots can now be trained to use robots. How? What a robot's scene needs, written as structured text, for a language model to act on it.">
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-DF7Zhf293AJxJNTmh5zhoYYIMs2oXitRfBjY+9L//AY=" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous">
@@ -20,6 +20,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jwarby/jekyll-pygments-themes@master/native.css" media="none" id="highlight_theme_dark">
     <script src="/assets/js/theme.js"></script>
     <script src="/assets/js/dark_mode.js"></script>
+    <style>
+      .post-content .lede { color: #f7c588; font-size: 1.4rem; text-align: center; margin: 0.25rem 0 0.75rem; }
+      html:not([data-theme='dark']) .post-content .lede { color: #b8862f; }
+      .post-content .paper-note { color: #9a9a9a; font-size: 0.95rem; text-align: center; margin-bottom: 0.5rem; }
+      html:not([data-theme='dark']) .post-content .paper-note { color: #6c757d; }
+      .post-content .tweet { display: flex; justify-content: center; margin: 1.5rem 0; }
+      .post-content .tweet .twitter-tweet { margin: 0 auto !important; }
+    </style>
   </head>
   <body class="fixed-top-nav">
     <header>
@@ -60,108 +68,88 @@
     <div class="container mt-5">
       <div class="post">
         <header class="post-header">
-          <h1 class="post-title">Training chatbots to use robots</h1>
+          <h1 class="post-title">How chatbotics works</h1>
           <p class="post-meta">September 27, 2026</p>
         </header>
         <article class="post-content">
+          <p class="lede">Chatbots can now be trained to use robots. How?</p>
+          <p class="paper-note">For a more technical view, the two experiments I describe here are presented as technical papers for <a href="/assets/pdf/statebench_paper.pdf" target="_blank" rel="noopener noreferrer">statebench</a> and <a href="/assets/pdf/robolabel_paper.pdf" target="_blank" rel="noopener noreferrer">robolabel</a>. This post is meant to convey them in a more digestible way.</p>
+          <hr style="width: 20%; margin: 1.5rem auto;">
 
-          <p>If you're paying attention, you may have noticed that so-called LANGUAGE models are <a href="https://x.com/xereeto/status/2104027757848269192?s=20" target="_blank" rel="noopener noreferrer">increasingly nailing visual tasks</a>. Robotics, 3D design, image generation: all going the way of the transformer architecture.</p>
-
-          <p>Why is the chatbot absorbing these things too? This is because, to the computer, text is undoubtedly the universal interface. Everything that the computer understands is ultimately relayed to it via some kind of text. As such, tasks that we perceive as visual can be distilled into textual formats called structured state representations and trained upon to improve visual decision making.</p>
-
-          <p>This was always possible, but there have been obstacles for a language model to, say, predict motor values at every timestep for a robot. Here's a big one for robotics: these spatial tasks are slow and expensive when carried out by an LLM, but the task demands real-time reactivity. The LLM has to generate a decision for every step, or else <a href="https://code-as-policies.github.io/" target="_blank" rel="noopener noreferrer">follow some preset plan</a> between refreshes that cannot be adjusted, all while burning tokens. This all amounts to overkill.</p>
-
-          <p>The System 1/System 2 paradigm of models breaks this limitation. <a href="https://typesafe.ai/blog/introducing-system-one-models-and-jev" target="_blank" rel="noopener noreferrer">Jev</a>, the heralded System 1 model, can act as a scout, quickly assessing the changes in that structured state over time. Jev relays the changes to the slower, wiser System 2 model, which then rewrites what's left of the plan. Jev simply reads the state, then picks among a limited set of actions defined in the structured state. System 2 makes the initial plan and then, like a watchful guardian, ONLY steps in when Jev assesses from the structured state that there has been a failure in the step or that the task has changed considerably. My System 2 model was OpenAI's GPT-6 Sol. I tested Jev and Sol separately, and I haven't run the full loop yet.</p>
-
-          <p><img src="/assets/statebench/system1_system2.png" alt="Diagram: Sol writes a plan into the structured state, Jev reads the state and sends the next action to the robot, and a dashed arrow returns to Sol only when a step fails." style="display: block; width: 100%; max-width: 820px; margin: 0 auto;"></p>
-          <div class="caption">The design. Jev's numbers come from one round of my runs.</div>
-
-          <p>With that, the structured state representation of the scene becomes very important for a language model to be able to work through these spatial tasks. The System 2 LLM encodes its decree for Jev within it, and then Jev reads it at every decision. With the LLM generating the high-level directives contained in the state, it can be done live to cover the System 2 role for a task at inference-time, or it can be done offline at scale to make lots and lots of training labels for some class of visual tasks that you can then improve upon.</p>
+          <p>Sometime after it slopcoded your app or analyzed your Hinge conversation, the chatbot developed a stunning ability to <a href="https://x.com/andonlabs/status/2104630616721666289" target="_blank" rel="noopener noreferrer">operate surveillance drones</a> or <a href="https://x.com/omarrayyann/status/2099603620136140861?s=20" target="_blank" rel="noopener noreferrer">use robot arms dextrously</a>. I don’t think any of these fancy eval companies have created GlockBench yet, but I bet it could do that too. What happened?</p>
+          <div class="tweet"><blockquote class="twitter-tweet" data-dnt="true" data-align="center"><p lang="en" dir="ltr">that&#39;s right, it goes in the transformer hole! <a href="https://t.co/SMB3wAbRit">https://t.co/SMB3wAbRit</a></p>&mdash; kaylee ⏩ ˚✧ ﾟ. (@xereeto) <a href="https://x.com/xereeto/status/2104027757848269192?ref_src=twsrc%5Etfw">September 27, 2026</a></blockquote></div>
+          <p>So-called LANGUAGE models are increasingly nailing all sorts of visual and spatial tasks. <a href="https://x.com/cdngdev/status/2097339677128982873?s=20" target="_blank" rel="noopener noreferrer">Robotics</a>, <a href="https://x.com/aollivier82/status/2096226819401801896?s=20" target="_blank" rel="noopener noreferrer">3D design</a>, <a href="https://x.com/jkeatn/status/2102441348075057539?s=20" target="_blank" rel="noopener noreferrer">image generation</a> and more- all going the way of the transformer architecture. This is because, to the computer, text is undoubtedly <a href="https://scale.com/blog/text-universal-interface" target="_blank" rel="noopener noreferrer">the universal interface</a>. Everything that the computer understands is ultimately relayed to it via some kind of text. As such, tasks that we perceive as visual can be distilled into textual formats called <strong>structured state representations</strong> and trained upon to improve visual decision making.</p>
+          <p>My goal in a set of experiments was to understand what the best makeup for this structured state is, and how to create them at scale to train better models.</p>
 
           <h2>The structured state</h2>
 
-          <p>So what even is this structured state? What does it consist of? Everything? It's supposed to describe the entire scene in a compact way. I tried to understand what the best makeup for this structured state was, and how to create them at scale to train better models.</p>
+          <p>So what even is this structured state? What does it consist of? Everything? It's supposed to describe the entire visuospatial scene in compact text. In reading a structured state of a scene at some timestep, a model should have all the information it needs to take some action to produce a desired result in the structured state of the NEXT timestep.</p>
+          <p>Some tasks are expressed in file formats that are sufficiently compact and legible as text that the raw data itself can be <a href="https://x.com/kvdozer/status/2101745456091136459?s=20" target="_blank" rel="noopener noreferrer">used as the bulk of the structured state</a>. This becomes less true as the task widens in context; raw ingestion of every pixel value of <a href="https://x.com/shreypandya/status/2100606445758898287?s=20" target="_blank" rel="noopener noreferrer">Mario Kart to prompt a controller input</a> is not a helpful approach for today’s LLMs, and thus requires a simplified structured state to be easily navigable.</p>
 
-          <p>Let's start with an easy case. Say my robotic task is inside of a simulation engine. In my engine, I can get a report of every object's exact position at every step. This tracking is the bedrock of my structured state. In <a href="https://mujoco.org/" target="_blank" rel="noopener noreferrer">MuJoCo</a> I read the positions straight from the engine, add a few mm of noise to mimic a real tracker, and store them relative to each other, like where the cube is relative to the gripper.</p>
+          <h2>The experiment</h2>
 
-          <p>The state also needs a <a href="https://say-can.github.io/" target="_blank" rel="noopener noreferrer">menu of all possible actions</a> the robot can take at any given timestep. The model's whole job is to choose from it, so that menu constrains what the system can do at all. We define this menu ourselves. Mine were skills like "approach the cube", "close the gripper", "lift", "carry to the tray", "release" and "back off", and for drawing, "draw this line", "lift the pen" and "finish".</p>
+          <p>My probe to find this ideal structured state for robotics will take an easy case. The robotic tasks I perform will be inside of a simulation engine, and my structured state will derive info from that engine.</p>
+          <p>In my engine, I can get a report of every object's exact position at every step. This tracking is the bedrock of my structured state. In MuJoCo I read the positions straight from the engine, add a few mm of noise to mimic a real tracker, and store them relative to each other, like where the cube is relative to the gripper.</p>
+          <p>The state also needs a menu of all possible actions the robot can take at any given timestep. The model's whole job is to choose from it, so that menu constrains what the system can do at all. We define this menu ourselves. These actions can really range in complexity, but let’s first imagine them as fundamental movements like ‘move right’, ‘move down’, ‘move forward’, etc.</p>
+          <p>And then lastly, the goal label: what the task is and what counts as done. Describing the intent of a task is a very qualitative observation that can be tough to label at scale. Outside of the individual state, you also need to find a clever verifier to score how far you have progressed towards a goal label. This is the metric you hillclimb on in an RL environment to teach a model the whole thing.</p>
+          <p>I then ran ablative experiments across all of these fields to find which ones actually add meaningful functionality to the model. I wanted to see which fields hurt performance most in their absence, and at what degree of imprecision would the field hurt the model when present.</p>
 
-          <p>And then lastly, the goal label: what the task is and what counts as done. This is a very open-ended field, and yet we are going to need to find some kind of verifier that can test how complete a task is.</p>
+          <h2>The planning architecture</h2>
 
-          <p>I then ran ablations across all of these fields to find which ones actually add meaningful functionality to the model. I ran a bunch of tasks with and without each field and checked whether its absence hurt the model, and at what degree of imprecision the field hurt the model when present.</p>
+          <p>Casting multimodal tasks as text prediction has always been possible. Before LLMs supported image inputs, I remember asking LLMs to ‘see’ by giving them ASCII art. GPT2 could’ve taken a list of motor values and predicted <em>something</em>, albeit something bad.</p>
+          <p>But there have been serious obstacles for a language model to predict motor values at every timestep for a robot. One problem is the huge context-length of predicted values, which can be solved by the concise structured state as well as just having better models with greater attention and context length.</p>
+          <p>Another such obstacle is that these spatial tasks are way too slow and expensive when carried out by an LLM. The prediction moves at the speed of lengthy response times, but robotic tasks demand real-time reactivity. The LLM has to generate a decision for every step, or else follow some preset plan between refreshes that cannot be adjusted, all while burning tokens.</p>
+          <p>The System 1/System 2 paradigm of models breaks this limitation. Jev, the heralded System 1 model, can act as a scout, quickly assessing the changes in that structured state over time. Jev relays the changes to the slower, wiser System 2 model, which then rewrites what's left of the plan. Jev simply reads the state, then picks among a limited set of actions defined in the structured state. System 2 makes the initial plan and then, like a watchful guardian, ONLY steps in when Jev assesses from the structured state that there has been a failure in the step or that the task has changed considerably.</p>
+          <p><img src="/assets/statebench/system1_system2.png" alt="Sol writes a plan into the structured state, Jev reads the state and sends the next action to the robot in the scene, the scene feeds back into the structured state, and a dashed arrow returns to Sol only when a step along the plan fails." style="display: block; width: 100%; max-width: 860px; margin: 0 auto;"></p>
+          <div class="caption">An example of System 1/System 2 dynamics. Jev answers ‘how much’ and ‘yes/no’ questions, Sol plays the System 2 role of coach.</div>
+          <p>With that, the structured state representation of the scene becomes very important for a language model to be able to work through these spatial tasks. The System 2 LLM encodes its decree for Jev within it, and then Jev reads it at every decision. With the LLM generating the high-level directives contained in the state, it can be done live to cover the System 2 role for a task at inference-time, or it can be done offline to make tons of training labels at scale for some class of visual tasks that you can then improve upon.</p>
 
-          <h2>What goes in the state</h2>
+          <h2>Trimming the fat</h2>
 
-          <p>Through this, there were some interesting findings. Mostly that, as long as the goal was clearly stated, whenever I tried to add an additional label, it ended up being totally dominated in usefulness by the tracking data anyway, even accounting for tracking error and noise. When the goal was badly written, the extra labels did partly patch over it.</p>
-
+          <p>Through ablating the structured state, I distinguished what helped and what didn’t. One such lesson was the heavy-handed importance of tracking. As long as the goal was clearly stated, proposed experimental labels often ended up being totally dominated in usefulness by the tracking data, even accounting for tracking error and noise.</p>
           <p>We could distinguish these experimental labels as:</p>
           <ul>
             <li><strong>Meaning labels:</strong> simple yes/no facts computed from the positions: "gripper lined up with the cube", "cube grasped", "cube in the tray"</li>
             <li><strong>Procedure labels:</strong> bookkeeping checks for the task in progress ("is my position estimate out of date?", "how many grab attempts since the last lift?")</li>
           </ul>
-
-          <p>These generally went nowhere. The meaning labels describing contact that did survive ablation would reveal a category I might call "fine contact" (i.e. "Is the pen touching the paper?") where a few millimeters of discrepancy can majorly impact the success of the task. The fallout from fine contact error was also lopsided, as a false "not touching" knocked the pen out of the hand every time, while a false "touching" did no harm. In a real task, these labels would require a precision that outstrips tracking error. If tracking error were higher than the precision needed, these "fine contact" interactions would underscore areas that would need actual additional haptic sensors to represent accurately.</p>
-
-          <video src="/assets/statebench/contact_errors.mp4" autoplay muted loop playsinline class="img-fluid" style="display: block; width: 100%; max-width: 900px; margin: 0 auto;"></video>
-          <div class="caption">The contact label wrong half the time, same seed. A false "not touching" ruined all 50 drawings. A false "touching" ruined none.</div>
-
-          <p>This gradually whittled down the structured state into a leaner, more useful representation. But most of all, it identified the major defining term of our structured state.</p>
+          <p>These generally went nowhere. The meaning labels describing contact that did survive ablation would reveal a category I might call "fine contact" (i.e. "Is the pen touching the paper?") where a few millimeters of discrepancy can majorly impact the success of the task. In a real task, these labels would require a precision that outstrips tracking error. If tracking error were higher than the precision needed, these "fine contact" interactions would highlight areas that need additional sensors to represent accurately, like recorded haptic feedback.</p>
+          <p>This ablation gradually whittled down the structured state into a leaner, more useful representation. But most of all, it identified the major defining term of our structured state.</p>
 
           <h2>The goal</h2>
 
-          <p>The goal decided more than any other field, and no sensor can hand it to you. Somebody has to write down what the task is and when it's over.</p>
-
-          <p>A goal with a bad ending was worse than no goal at all. My first pick and place goal said "Pick up the red cube from the table and place it in the blue receptacle." It never said to let go and back away, which is what the checker wanted. With that goal and positions alone, Jev finished 17 of 50 runs, re-grabbing the cube until it ran out of decisions. Once the goal ended with "then move the gripper clear of the receptacle," positions alone got 50 of 50. With no goal at all, Jev got 49 of 50 (48 on a second set of seeds). A goal missing its ending landed between 17 and 22 of 50 four separate times.</p>
-
-          <p>This is where the extra labels earned their keep. Under the half-written goal, meaning labels lifted Jev to 28 and procedure fields got it to 47. Under the full goal, the same fields dropped it to 45, because Jev started looping.</p>
-
-          <p><img src="/assets/statebench/state_fields.png" alt="Chart of Jev's successes out of 50 for six states: 17, 28 and 47 with a goal missing its ending, 50 and 45 with the full goal, and 48 with no goal." style="display: block; width: 100%; max-width: 820px; margin: 0 auto;"></p>
-          <div class="caption">Jev on pick and place, 50 runs per row. Dark icons are the fields present. Hollow flag: goal missing its ending. Filled: full goal. Grey: none.</div>
-
-          <p>No goal did well because the menu was narrow. With skills like approach, close, lift, carry, release and back off, there's really one task you can do, so the menu quietly carries the goal. Such a menu only works for that one task, though, and I set mine by hand.</p>
-
-          <h2>Labeling goals from video</h2>
-
-          <p>The obvious way to get goals for thousands of videos is to have a multimodal model watch each one and write the goal. Sol mostly wrote down what it saw. It left out endings: 1 of 50 pick and place goals mentioned the robot's final withdrawal, and 15 of 50 drawing goals mentioned lifting the pen. It copied failed attempts. After a button press where the first try missed, one goal read "Attempt to grasp the front red piece twice, then withdraw without moving it." And one unrelated red cube in the scene made 21 of 50 button goals describe a pick and place.</p>
-
-          <p><img src="/assets/statebench/camera.jpg" alt="Two by two grid of the drawing robot with the pen up and the pen down, seen from the overhead camera and from a side camera." style="display: block; width: 100%; max-width: 760px; margin: 0 auto;"></p>
-          <div class="caption">Part of it is the camera. Sol called pen up or down right 22 of 80 times from overhead, and 79 of 80 from the side.</div>
-
-          <p>A wrong goal at scale gets copied into every label. The most reliable fix I found skipped the goal entirely: I built the ending into the robot's finish action, so "finish" always lifts the pen. Without it, 283 of 400 replayed drawings dragged a line at the end. With it, drawings ended cleanly whatever the goal said.</p>
-
-          <p>It isn't hopeless. After watching the robot draw one part of a painting, Sol named the part 12 of 12 times, and its goal got about halfway from "draw this image" to my own goal (44% of the ink inside the part, against 16% and 66%).</p>
-
-          <h2>Splitting the goal up</h2>
-
-          <p>The System 2 model's real job is turning the goal into a plan. Jev can follow a plan written in advance, like a list of strokes, and recovered from all 14 interrupted strokes I threw at it. Sol can write that kind of plan straight from a picture, though Jev hasn't run one of Sol's plans yet. In my drawing testbed, Sol looks at a painting and writes every stroke, and a robot hand from <a href="https://github.com/dimentary/llm-robotics-playground" target="_blank" rel="noopener noreferrer">llm-robotics-playground</a> draws them.</p>
-
-          <p>Models like <a href="https://www.pi.website/blog/pi07" target="_blank" rel="noopener noreferrer">π0.7</a> lean on sub-goals, so I tried breaking the job up. I wrote each painting's parts by hand and compared five ways: one shot, four rounds of the whole picture, four rounds of one part each, coarse to fine, and parts with a layout, where Sol first plans a box for each part. I rated 12 drawings per way, blind, from 1 to 5.</p>
-
-          <p>Breaking it up didn't help! One shot averaged 2.25, parts with a layout 2.17, rounds by part 1.67, rounds 1.08 and coarse to fine 1.00. One shot also used the fewest tokens, and a checklist of parts moved its rating by all of 0.07.</p>
-
-          <video src="/assets/statebench/four_ways_grid.mp4" autoplay muted loop playsinline class="img-fluid" style="display: block; width: 100%; margin: 0 auto;"></video>
-          <div class="caption">A fresh run of all five ways with the current Sol, one unrated drawing each. The coarse-to-fine Mona Lisa stopped early on a robot arm error. The ratings above come from the earlier rated run.</div>
-
-          <p>In this fresh run, the Starry Night rounds drawing looks about as good as one shot, while Mona Lisa keeps the old order. That's one unrated sample, so I can't say yet whether the current Sol closes the gap.</p>
-
-          <p>My guess is that rounds hurt because Sol only saw a picture of the page between rounds and struggled to place new strokes against old ones. Giving it the coordinates of its earlier strokes improved rounds on the automatic scores, but I haven't rated those drawings yet, so that's only a hint.</p>
-
-          <p>Parts drawn one at a time also lost track of each other. With no reference image, the Statue of Liberty drawn part by part came out as a pile. A sub-goal needs a "where" as well as a "what", which is what the layout added, though with 12 drawings each its edge over parts alone isn't established.</p>
+          <p>The goal label mattered way more than any other field beyond tracking. It encodes the whole intent of your task, and you can’t just derive it from some sensor. Someone has to qualitatively evaluate what the task is and when it’s over.</p>
+          <p>Goals that poorly described ending conditions performed worse than no goal at all. My first pick and place goal said "Pick up the red cube from the table and place it in the blue receptacle." The verifier, however, wanted the arm to retract when done. A good ending condition would therefore not only be in harmony with the intent of the task, but also with the verifier that scores it. That ending condition would also make the model resilient to learning from demos with failed actions like mishandled grabs or premature releases- this experiment revealed the annotation of failed actions to be a very helpful label to collect.</p>
+          <video src="/assets/statebench/goal_without_an_ending.mp4" autoplay muted loop playsinline class="img-fluid" aria-label="Two robot arms at a tray. Left, the arm keeps holding the red cube over the tray. Right, the arm releases the cube in the tray and moves clear." style="display: block; width: 100%; max-width: 810px; margin: 1.5rem auto 0;"></video>
+          <div class="caption">Left: a goal with no ending, and the arm hangs onto the cube over the tray. Right: the goal ends with “then move the gripper clear,” so it lets go and backs away.</div>
+          <p>One interesting thing: the goal label revealed the coercive control that the action menu could assume. Simple tasks with no goal label even stated could be completed with narrow action menus. With an action menu like [approach, grasp, transport, release and retract] a model will look at a scene with one square block and a bin with a blind assumption that the block should be put in the bin. This is a very very narrow example(what if the actual goal was something way different?) but it exemplifies how the menu subtly encodes the goal on its own and nudges the model in certain directions. Such a narrow menu only works for that single task, but perhaps in the future it could potentially be <a href="https://x.com/Ken_Goldberg/status/2100986412762087909?s=20" target="_blank" rel="noopener noreferrer">dynamically tailored to each task by the System 2 model</a>.</p>
 
           <h2>robolabel</h2>
 
-          <p>All of this points back at the labeler. <a href="https://github.com/kevdozer1/robolabel" target="_blank" rel="noopener noreferrer">robolabel</a> is my tool for turning demonstration video, from plain clips or <a href="https://github.com/huggingface/lerobot" target="_blank" rel="noopener noreferrer">LeRobot</a> datasets, into training labels: the task's phases, each grasp attempt and whether it failed, and the goal. The new version works from video alone. Its goal is a list of end states, each marked required, incidental or unsure, and a failed grasp gets its own label as a failed attempt, which is aimed at the copied retries above. I haven't measured how accurate those goals are yet.</p>
+          <p>To learn the link between a task and its goal, a model needs tons of examples of both. So flip it around: have a model like Sol watch a video of the task and write down the goal. Now you have pairs to learn from in the opposite direction, from the text of a goal to the actions that achieve it.</p>
+          <p>That's what <a href="https://github.com/kevdozer1/robolabel" target="_blank" rel="noopener noreferrer">robolabel</a> does. It turns demo video into labels to be infused into the state that a model learns from. I improved an old tool of mine to work on much more diverse sets of video, and to give me descriptions of failed actions, like the mishandled grabs I mentioned before. It also helps me parse goals into subgoal actions. It works really fast and really cheap, and I compared it across all the big models.</p>
+          <div class="tweet"><blockquote class="twitter-tweet" data-dnt="true" data-align="center"><p lang="en" dir="ltr">Heavily improved my open source VLM annotator for robotic videos, Im getting super good results on a wider diversity now. I also compared across a bunch of models for cost/speed/quality. These new models are sooo nice to use for vision <a href="https://t.co/CL0n62jmWR">https://t.co/CL0n62jmWR</a> <a href="https://t.co/MwhVJCvtRw">pic.twitter.com/MwhVJCvtRw</a></p>&mdash; Dozer🚜 (@kvdozer) <a href="https://x.com/kvdozer/status/2104637521540059274?ref_src=twsrc%5Etfw">September 28, 2026</a></blockquote></div>
 
-          <video src="/assets/statebench/robolabel_tshirt_fold.mp4" autoplay muted loop playsinline class="img-fluid" style="display: block; width: 100%; max-width: 644px; margin: 0 auto;"></video>
-          <div class="caption">robolabel on a head-camera T-shirt fold, labeled by GPT-6 Sol in 35 s for $0.06. Clip: <a href="https://huggingface.co/datasets/eidon-ai/tracker-pov" target="_blank" rel="noopener noreferrer">Eidon Tracker POV</a> by Eidon AI, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>.</div>
+          <h2>Splitting the goal up</h2>
+
+          <p>The System 2 model's job is to turn a goal into a plan. For a drawing, that plan is just a list of strokes, which makes drawing and painting a great testbed.</p>
+          <div class="tweet"><blockquote class="twitter-tweet" data-dnt="true" data-align="center"><p lang="en" dir="ltr">Science is serious business <a href="https://t.co/ZqTpypjaiN">pic.twitter.com/ZqTpypjaiN</a></p>&mdash; Dozer🚜 (@kvdozer) <a href="https://x.com/kvdozer/status/2103251170299121738?ref_src=twsrc%5Etfw">September 24, 2026</a></blockquote></div>
+          <p>In my version, Sol looks at a painting and writes out every stroke, and a robot hand with a pencil draws them.</p>
+          <p>A whole painting is a big goal. Perhaps breaking it up helps, but how? You could go coarse to fine, the way diffusion models refine an image. You could go part by part: the face, the hands, the landscape. I tried a few of these against drawing the whole thing in one shot.</p>
+          <p>Breaking up the goal into smaller parts didn't help, and it seemed that one shot allowed Sol to keep its own internal calibration of things, but that could be my error.</p>
+          <div class="tweet"><blockquote class="twitter-tweet" data-dnt="true" data-align="center"><p lang="en" dir="ltr">painting with chatbots and robots😇 <a href="https://t.co/Qr8hcnJRW0">pic.twitter.com/Qr8hcnJRW0</a></p>&mdash; Dozer🚜 (@kvdozer) <a href="https://x.com/kvdozer/status/2103636108315926528?ref_src=twsrc%5Etfw">September 26, 2026</a></blockquote></div>
+          <p>You be the judge. The one-shot drawings come out clean and in proportion. Drawn in rounds, the strokes pile on top of each other, and the Mona Lisa's hands turn into a tangled knot of scribbles.</p>
+          <p>I think it comes down to calibration. Between rounds, Sol only saw a picture of the page, so it didn't know exactly what was already there and kept drawing over it. You can tell that grounding it in the coordinates of its earlier strokes helped. It needs calibration on what's already on the page so it doesn't repeat itself.</p>
+          <p>Parts overlapped for the same reason. With no grounding, Sol doesn't understand by default how the parts sit relative to each other, so they pile up. And a scene isn't so easily segmentable into parts anyway. What if stuff gets left out?</p>
+          <video src="/assets/statebench/statue_of_liberty.mp4" autoplay muted loop playsinline class="img-fluid" aria-label="Three robot drawings of the Statue of Liberty. One shot is a recognizable statue, part by part is a pile of overlapping shapes, and part by part with a layout is a recognizable statue." style="display: block; width: 100%; max-width: 1000px; margin: 1.5rem auto 0;"></video>
+          <div class="caption">The Statue of Liberty from words alone: in one shot, part by part, and part by part with a layout. Without a layout, the parts pile on top of each other.</div>
 
           <h2>Where this goes</h2>
 
-          <p>So what actually goes in a structured state? Less than I expected. Positions, even noisy ones. A menu of actions the robot can really take. A real contact sensor wherever a few millimeters decide the outcome. And a goal, stated completely, especially how it ends.</p>
-
-          <p>Next I want to run the whole loop, with Sol writing the plan and Jev running it, then train on goal labels like robolabel's. The tasks, the checks and a short history of all 19 rounds, mistakes included, are in the <a href="https://github.com/kevdozer1/statebench" target="_blank" rel="noopener noreferrer">statebench repo</a>.</p>
-
-          <p>Put together, that's the shape of an RL environment for spatial skills: a scene written as structured state, a checker that says whether the task got done (which doubles as the reward), and goal labels made at scale from video. That's how you could train a chatbot toward the spatial smarts newer models like <a href="https://openrouter.ai/openai/gpt-6-astra" target="_blank" rel="noopener noreferrer">GPT-6 Astra</a> are showing off. I don't know how Astra itself was trained, but this is how I'd go about it.</p>
+          <p>So here's the final structured state. Tracking data for everything in the scene. An action menu of what the robot can actually do. A goal with a clear end. And contact labels, only where a few millimeters decide the outcome. Outside of it lives a verifier that scores how far the task has progressed toward the goal.</p>
+          <p><img src="/assets/statebench/structured_state.jpg" alt="A glossy blue blob labeled structured state holds four pills: tracking data, action menu, goal with a clear end, and contact labels, if needed. An arrow points to a round verifier dial with a green progress ring, labeled scores progress toward the goal." style="display: block; width: 100%; max-width: 820px; margin: 0 auto;"></p>
+          <div class="caption">The structured state, trimmed down. The verifier sits outside it and scores progress toward the goal.</div>
+          <p>The nice thing is that all of this can come from video. Great video-to-tracking software like <a href="https://arxiv.org/abs/2506.13040" target="_blank" rel="noopener noreferrer">MAMMA</a>, or models built specifically for <a href="https://geopavlakos.github.io/hamer/" target="_blank" rel="noopener noreferrer">hand reconstruction</a>, can pull the tracking data out of ordinary footage. Then you run something like robolabel to get the goal and its end conditions, and the actions robolabel labels become your action menu.</p>
+          <p>Then you let a model loose in it. Write each scene as a structured state, let the model pick actions off the menu, and have the verifier score how far each move pushed the task toward its goal. Every point it climbs on that verifier is a reward. Do that over and over, across thousands of scenes, and the model hillclimbs its way into real spatial skill, all through text. That's how you get a chatbot that's really good at using robots. That's how chatbotics works.</p>
         </article>
       </div>
     </div>
@@ -178,5 +166,14 @@
     <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript">function progressBarSetup(){"max"in document.createElement("progress")?(initializeProgressElement(),$(document).on("scroll",function(){progressBar.attr({value:getCurrentScrollPosition()})}),$(window).on("resize",initializeProgressElement)):(resizeProgressBar(),$(document).on("scroll",resizeProgressBar),$(window).on("resize",resizeProgressBar))}function getCurrentScrollPosition(){return $(window).scrollTop()}function initializeProgressElement(){let e=$("#navbar").outerHeight(!0);$("body").css({"padding-top":e}),$("progress-container").css({"padding-top":e}),progressBar.css({top:e}),progressBar.attr({max:getDistanceToScroll(),value:getCurrentScrollPosition()})}function getDistanceToScroll(){return $(document).height()-$(window).height()}function resizeProgressBar(){progressBar.css({width:getWidthPercentage()+"%"})}function getWidthPercentage(){return getCurrentScrollPosition()/getDistanceToScroll()*100}const progressBar=$("#progress");window.onload=function(){setTimeout(progressBarSetup,50)};</script>
+    <script>
+      (function () {
+        var theme = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+        document.querySelectorAll("blockquote.twitter-tweet").forEach(function (b) { b.setAttribute("data-theme", theme); });
+        var s = document.createElement("script");
+        s.async = true; s.charset = "utf-8"; s.src = "https://platform.twitter.com/widgets.js";
+        document.body.appendChild(s);
+      })();
+    </script>
   </body>
 </html>
