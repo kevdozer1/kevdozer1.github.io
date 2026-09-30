@@ -34,8 +34,10 @@
     <style>
       .post-content .lede { color: #f7c588; font-size: 1.4rem; font-weight: 700; text-align: center; margin: 0.25rem 0 0.75rem; }
       html:not([data-theme='dark']) .post-content .lede { color: #b8862f; }
-      .post-content .paper-note { color: var(--global-link-color); font-size: 1.125rem; text-align: center; margin-bottom: 0.5rem; }
-      .post-content .paper-link-row { line-height: 1.9; }
+      .post-content .paper-note { color: var(--global-text-color); font-size: 1.125rem; text-align: center; margin-bottom: 0.5rem; }
+      html[data-theme='dark'] .post-content .paper-note { color: #ffffff; }
+      .post-content .paper-note strong, .post-content .paper-note .paper-links { color: inherit; }
+      .post-content .paper-link-row { display: flex; justify-content: center; flex-wrap: wrap; column-gap: 3rem; row-gap: 0.4rem; }
       .post-content .paper-links a { margin: 0 0.35rem; white-space: nowrap; }
       .post-content .paper-links i { margin-right: 0.2rem; }
       .post-content .tweet { display: flex; justify-content: center; margin: 1.5rem 0 0; }
@@ -87,7 +89,7 @@
         <article class="post-content">
           <p class="lede">LLMs have suddenly surpassed dedicated robotic models in performing spatial tasks. How might you train an LLM in this way?</p>
           <p class="paper-note">I ran a set of simulated robot experiments to find out what data actually enables greater learning of visuospatial capabilities in LLMs. This takes the form of an experiment to find the best textual representation of the robotic scene, also known as the structured state. I then propose an annotation scheme to derive this structured state at scale from video and build out a VLM pipeline for doing that.</p>
-          <p class="paper-note paper-link-row"><span class="paper-links"><strong>statebench</strong>: <a href="/assets/pdf/statebench_paper.pdf" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-pdf"></i> Paper</a> <a href="https://github.com/kevdozer1/statebench" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> Code</a></span><br><span class="paper-links"><strong>robolabel</strong>: <a href="/assets/pdf/robolabel_paper.pdf" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-pdf"></i> Paper</a> <a href="https://github.com/kevdozer1/robolabel" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> Code</a></span></p>
+          <p class="paper-note paper-link-row"><span class="paper-links"><strong>statebench</strong>: <a href="/assets/pdf/statebench_paper.pdf" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-pdf"></i> Paper</a> <a href="https://github.com/kevdozer1/statebench" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> Code</a></span><span class="paper-links"><strong>robolabel</strong>: <a href="/assets/pdf/robolabel_paper.pdf" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-pdf"></i> Paper</a> <a href="https://github.com/kevdozer1/robolabel" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> Code</a></span></p>
           <hr style="width: 20%; margin: 1.5rem auto;">
 
           <p>Sometime after it slopcoded your app or analyzed your Hinge conversation, the chatbot developed a stunning ability to <a href="https://x.com/andonlabs/status/2104630616721666289" target="_blank" rel="noopener noreferrer">operate surveillance drones</a> or <a href="https://x.com/omarrayyann/status/2099603620136140861?s=20" target="_blank" rel="noopener noreferrer">use robot arms dextrously</a>. I don’t think any of these fancy eval companies have created GlockBench yet, but I bet it could do that too. What happened?</p>
