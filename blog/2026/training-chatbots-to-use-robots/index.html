@@ -41,8 +41,8 @@
       .post-content .paper-links a { margin: 0 0.35rem; white-space: nowrap; }
       .post-content .paper-links i { margin-right: 0.2rem; }
       .post-content h2 { font-weight: 700; }
-      .post-content .tweet { display: flex; justify-content: center; margin: 1.5rem 0 0; }
-      .post-content .tweet .twitter-tweet { margin: 0 auto !important; }
+      .post-content .video-pair { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; max-width: 1000px; margin: 1.5rem auto 1rem; }
+      .post-content .video-pair video { flex: 1 1 300px; min-width: 0; width: 100%; height: auto; }
     </style>
   </head>
   <body class="fixed-top-nav">
@@ -145,10 +145,10 @@
           <h2>Testing intent</h2>
 
           <p>Having the model control a robot to paint is a great test. It’s dextrous, can be graded by looking at it, and it’s fun to watch! With the System 2 model tasked with turning the goal into a discrete plan, that plan manifests in the painting task as a list of strokes to draw.</p>
-          <div class="tweet"><blockquote class="twitter-tweet" data-dnt="true" data-align="center"><p lang="en" dir="ltr">Science is serious business <a href="https://t.co/ZqTpypjaiN">pic.twitter.com/ZqTpypjaiN</a></p>&mdash; Dozer🚜 (@kvdozer) <a href="https://x.com/kvdozer/status/2103251170299121738?ref_src=twsrc%5Etfw">September 24, 2026</a></blockquote></div>
+          <p><img src="/assets/statebench/initial_drawings.jpg" alt="The Starry Night, The Great Wave and the Mona Lisa beside robot line drawings of each, one column from the prompt &#x27;Draw this image.&#x27; and one from a goal with the complete intent, marked with red crosses and green checks." style="display: block; width: 100%; max-width: 600px; margin: 0 auto;"></p>
           <div class="caption">Some initial drawing attempts</div>
           <p>I was operating on a few assumptions when structuring how the goal label would best be presented to the model. Robotics has rewarded action-chunking in the past, so it might be good to try breaking down the goal into smaller sub-goals like the individual parts of a painting. Conversely, I also noticed in a lot of <a href="https://x.com/Stevie_658jjh/status/2096849748603162902?s=20" target="_blank" rel="noopener noreferrer">computer-use drawing demos</a> that LLMs like to paint in a diffusion-like manner, first filling in the vague blobs of the scene and then iteratively refining at greater detail. I figured it would be good to try breaking the goal down into levels of detail, like first painting larger elements and then adding detail later.</p>
-          <div class="tweet"><blockquote class="twitter-tweet" data-dnt="true" data-align="center"><p lang="en" dir="ltr">painting with chatbots and robots😇 <a href="https://t.co/Qr8hcnJRW0">pic.twitter.com/Qr8hcnJRW0</a></p>&mdash; Dozer🚜 (@kvdozer) <a href="https://x.com/kvdozer/status/2103636108315926528?ref_src=twsrc%5Etfw">September 26, 2026</a></blockquote></div>
+          <video src="/assets/statebench/four_ways_grid.mp4" autoplay muted loop playsinline class="img-fluid" aria-label="A simulated robot arm drawing The Starry Night and the Mona Lisa five ways: one shot, rounds, rounds by part, coarse to fine, and parts with a layout, each above its finished line drawing." style="display: block; width: 100%; max-width: 1000px; margin: 1.5rem auto 0;"></video>
           <div class="caption">Results of two paintings with different goal structures. ‘One shot’ gives the full plan at once, ‘rounds’ replan at set intervals, ‘parts’ divides the goal by major elements of the image, and coarse-to-fine moves from lowest to highest detail</div>
           <p>Take a look! To me, the one-shot illustration performs the best. I found that the plans downstream of broken-down subgoals were badly miscalibrated. The model did not retain an accurate map of where previous strokes actually were, which led to a lot of clutter. Finding a good way to calibrate between subgoals would be vital.</p>
           <p>Parts overlapped for a similar reason. With no grounding of the parts within a larger layout, each would drift towards the center, leading to an overlapping mess. Having a persistent layout that maps the parts spatially helped a lot.</p>
@@ -171,7 +171,10 @@
           <p>Despite several passes, cost is kept low since the model never actually ingests every frame of the video. The accuracy of annotations, however, turns out much higher in this scaffolded workflow than just ingesting the video raw. It’s the best of both worlds!</p>
           <p>We get a clearly defined goal, and the descriptions of each action stage make great subgoals. The action menu can just be populated by the broad action tags we generate in the second pass.</p>
           <p>We can also denote failed action stages, which proved to be a very useful field, and pair in contact or motor values when a video has them. The experiment includes a cost/speed/quality comparison across several major models. Altogether, we can theoretically reconstruct our entire structured state from any video!</p>
-          <div class="tweet"><blockquote class="twitter-tweet" data-dnt="true" data-align="center"><p lang="en" dir="ltr">Heavily improved my open source VLM annotator for robotic videos, Im getting super good results on a wider diversity now. I also compared across a bunch of models for cost/speed/quality. These new models are sooo nice to use for vision <a href="https://t.co/CL0n62jmWR">https://t.co/CL0n62jmWR</a> <a href="https://t.co/MwhVJCvtRw">pic.twitter.com/MwhVJCvtRw</a></p>&mdash; Dozer🚜 (@kvdozer) <a href="https://x.com/kvdozer/status/2104637521540059274?ref_src=twsrc%5Etfw">September 28, 2026</a></blockquote></div>
+          <div class="video-pair">
+            <video src="/assets/statebench/ego_eidon.mp4" autoplay muted loop playsinline aria-label="A first-person video of hands folding a T-shirt, under a colored timeline of action stages, the current stage description and the goal robolabel derived from the raw video in 35 s for $0.060."></video>
+            <video src="/assets/statebench/robot_f3_1821.mp4" autoplay muted loop playsinline aria-label="A robot gripper camera view of a robot trying to put an eye drops box in a basket, under a colored timeline of action stages, a failed-grasp stage description and the goal robolabel derived from the raw video in 2 min 20 s for $0.164."></video>
+          </div>
 
           <h2>Let it rip</h2>
 
@@ -196,14 +199,5 @@
     <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript">function progressBarSetup(){"max"in document.createElement("progress")?(initializeProgressElement(),$(document).on("scroll",function(){progressBar.attr({value:getCurrentScrollPosition()})}),$(window).on("resize",initializeProgressElement)):(resizeProgressBar(),$(document).on("scroll",resizeProgressBar),$(window).on("resize",resizeProgressBar))}function getCurrentScrollPosition(){return $(window).scrollTop()}function initializeProgressElement(){let e=$("#navbar").outerHeight(!0);$("body").css({"padding-top":e}),$("progress-container").css({"padding-top":e}),progressBar.css({top:e}),progressBar.attr({max:getDistanceToScroll(),value:getCurrentScrollPosition()})}function getDistanceToScroll(){return $(document).height()-$(window).height()}function resizeProgressBar(){progressBar.css({width:getWidthPercentage()+"%"})}function getWidthPercentage(){return getCurrentScrollPosition()/getDistanceToScroll()*100}const progressBar=$("#progress");window.onload=function(){setTimeout(progressBarSetup,50)};</script>
-    <script>
-      (function () {
-        var theme = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
-        document.querySelectorAll("blockquote.twitter-tweet").forEach(function (b) { b.setAttribute("data-theme", theme); });
-        var s = document.createElement("script");
-        s.async = true; s.charset = "utf-8"; s.src = "https://platform.twitter.com/widgets.js";
-        document.body.appendChild(s);
-      })();
-    </script>
   </body>
 </html>
