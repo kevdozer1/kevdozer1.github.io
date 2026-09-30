@@ -20,11 +20,22 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jwarby/jekyll-pygments-themes@master/native.css" media="none" id="highlight_theme_dark">
     <script src="/assets/js/theme.js"></script>
     <script src="/assets/js/dark_mode.js"></script>
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="How to train chatbots to use robots">
+    <meta property="og:description" content="LLMs have suddenly surpassed dedicated robotic models in performing spatial tasks. How might you train an LLM in this way?">
+    <meta property="og:url" content="https://kevdozer1.com/blog/2026/training-chatbots-to-use-robots/">
+    <meta property="og:image" content="https://kevdozer1.com/assets/statebench/header.jpg">
+    <meta property="og:image:width" content="1600">
+    <meta property="og:image:height" content="640">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="How to train chatbots to use robots">
+    <meta name="twitter:description" content="LLMs have suddenly surpassed dedicated robotic models in performing spatial tasks. How might you train an LLM in this way?">
+    <meta name="twitter:image" content="https://kevdozer1.com/assets/statebench/header.jpg">
     <style>
       .post-content .lede { color: #f7c588; font-size: 1.4rem; text-align: center; margin: 0.25rem 0 0.75rem; }
       html:not([data-theme='dark']) .post-content .lede { color: #b8862f; }
-      .post-content .paper-note { color: #9a9a9a; font-size: 0.95rem; text-align: center; margin-bottom: 0.5rem; }
-      html:not([data-theme='dark']) .post-content .paper-note { color: #6c757d; }
+      .post-content .paper-note { color: #b4b4b4; font-size: 1.125rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; }
+      html:not([data-theme='dark']) .post-content .paper-note { color: #7a8188; }
       .post-content .paper-link-row { line-height: 1.9; }
       .post-content .paper-links a { margin: 0 0.35rem; white-space: nowrap; }
       .post-content .paper-links i { margin-right: 0.2rem; }
@@ -76,7 +87,6 @@
         </header>
         <article class="post-content">
           <p class="lede">LLMs have suddenly surpassed dedicated robotic models in performing spatial tasks. How might you train an LLM in this way?</p>
-          <p><img src="/assets/statebench/header.jpg" alt="A bar chart titled Mean Score Across Ten Tasks, where a pi 0.5 plus GPT 6 Astra system scores far above dedicated robot models, flanked by two astonished cartoon faces." style="display: block; width: 100%; margin: 0.5rem auto 1rem;"></p>
           <p class="paper-note">I ran a set of simulated robot experiments to find out what data actually enables greater learning of visuospatial capabilities in LLMs. This takes the form of an experiment to find the best textual representation of the robotic scene, also known as the structured state. I then propose an annotation scheme to derive this structured state at scale from video and build out a VLM pipeline for doing that.</p>
           <p class="paper-note paper-link-row"><span class="paper-links"><strong>statebench</strong>: <a href="/assets/pdf/statebench_paper.pdf" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-pdf"></i> Paper</a> <a href="https://github.com/kevdozer1/statebench" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> Code</a></span><br><span class="paper-links"><strong>robolabel</strong>: <a href="/assets/pdf/robolabel_paper.pdf" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-pdf"></i> Paper</a> <a href="https://github.com/kevdozer1/robolabel" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> Code</a></span></p>
           <hr style="width: 20%; margin: 1.5rem auto;">
@@ -165,6 +175,7 @@
           <p><img src="/assets/statebench/structured_state.jpg" alt="A glossy purple blob labeled structured state holds four gold pills: tracking data, action menu, goal with a clear end, and contact labels, if needed. An arrow points to a round verifier dial with an orange progress ring, labeled scores progress toward the goal." style="display: block; width: 100%; max-width: 820px; margin: 0 auto;"></p>
           <div class="caption">Our beautiful, platonically-ideal structured state</div>
           <p>This covers our full training setup! We create an RL environment and let an LLM loose in it. We define each scene as a structured state, let the model pick from the action menu, and have the verifier score act as the reward function to maximize during training. With a data flywheel that can churn through whatever set of videos you want, we can train the model at a massive scale. I don’t have a fraction of the money to do any of this, but I think this is what the major labs are <a href="https://x.com/EugeneNg/status/2099315982959616369?s=20" target="_blank" rel="noopener noreferrer">doing right now</a>. This is how you are able to learn incredible spatial skills through text!</p>
+          <p><img src="/assets/statebench/header.jpg" alt="A bar chart titled Mean Score Across Ten Tasks, where a pi 0.5 plus GPT 6 Astra system scores far above dedicated robot models, flanked by two astonished cartoon faces." style="display: block; width: 100%; margin: 2rem auto 0;"></p>
         </article>
       </div>
     </div>
